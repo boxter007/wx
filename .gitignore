@@ -6,3 +6,4 @@ main/__pycache__/*
 main/migrations/*
 .DS_Store
 da.code-workspace
+.gitignore
