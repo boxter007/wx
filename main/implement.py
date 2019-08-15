@@ -5,6 +5,8 @@ import uuid
 import json
 import datetime
 import requests
+import logging
+log = logging.getLogger("collect")
 
 appid = 'wxad901a90a74d3b9e'
 secret = 'dcc381d508b71bdcd093a7ea43c1e092'
@@ -30,8 +32,8 @@ def transfer(user, counterparty, amount,ttype,remark):
                 transid = uuid.uuid1().hex
                 #发起方记账
                 transA = models.Account.objects.create(
-                    debit=debit,
-                    credit=credit,
+                    debit=amount,
+                    credit=0,
                     balance=A.balance - amount,
                     balance_redpack=A.balance_redpack - amount,
                     remark=remark,
@@ -40,8 +42,8 @@ def transfer(user, counterparty, amount,ttype,remark):
                     transactionid=transid)
                 #交易对手记账
                 transB = models.Account.objects.create(
-                    debit=credit,
-                    credit=debit,
+                    debit=0,
+                    credit=amount,
                     balance=B.balance + amount,
                     balance_redpack=B.balance_redpack + amount,
                     remark=remark,
@@ -64,8 +66,8 @@ def transfer(user, counterparty, amount,ttype,remark):
                 transid = uuid.uuid1().hex
                 #发起方记账
                 transA = models.Account.objects.create(
-                    debit=debit,
-                    credit=credit,
+                    debit=amount,
+                    credit=0,
                     balance=A.balance - amount,
                     balance_redpack=A.balance_redpack,
                     remark=remark,
@@ -74,8 +76,8 @@ def transfer(user, counterparty, amount,ttype,remark):
                     transactionid=transid)
                 #交易对手记账
                 transB = models.Account.objects.create(
-                    debit=credit,
-                    credit=debit,
+                    debit=0,
+                    credit=amount,
                     balance=B.balance + amount,
                     balance_redpack=B.balance_redpack,
                     remark=remark,
@@ -96,8 +98,8 @@ def transfer(user, counterparty, amount,ttype,remark):
                 transid = uuid.uuid1().hex
                 #发起方记账
                 transA = models.Account.objects.create(
-                    debit=debit,
-                    credit=credit,
+                    debit=amount,
+                    credit=0,
                     balance=A.balance - amount,
                     balance_redpack=A.balance_redpack - amount,
                     remark=remark,
@@ -106,8 +108,8 @@ def transfer(user, counterparty, amount,ttype,remark):
                     transactionid=transid)
                 #交易对手记账
                 transB = models.Account.objects.create(
-                    debit=credit,
-                    credit=debit,
+                    debit=0,
+                    credit=amount,
                     balance=B.balance + amount,
                     balance_redpack=B.balance_redpack,
                     remark=remark,
@@ -122,8 +124,8 @@ def transfer(user, counterparty, amount,ttype,remark):
                 #交易对手增余额
                 B.balance = transB.balance
                 B.save()
-
     except Exception as e:
+        log.error(e)
         return False
     return True
 
@@ -139,45 +141,64 @@ def gettransferlist(user):
                     '-transaction_time')
             return list(trans)
     except Exception as e:
+        log.error(e)
         return None
 
 def makeqrcode(openid):
-    url = 'https://api.weixin.qq.com/wxa/getwxacode?access_token=%s' % getaccesstoken(
-    )
+    try:
+        url = 'https://api.weixin.qq.com/wxa/getwxacode?access_token=%s' % getaccesstoken(
+        )
 
-    data = json.dumps({
-        'width': 480,
-        'path': 'page/index/index?id=%s' % openid,
-        'auto_color':True
-    })
-    response = requests.post(url,data)
-    if (response.status_code == 200):
-        return response.content
-    else:
+        data = json.dumps({
+            'width': 480,
+            'path': 'page/index/index?id=%s' % openid,
+            'auto_color':True
+        })
+        log.info('makeqrcode    RequestUrl=%s   PostData=%s' % (url, data))
+        response = requests.post(url, data)
+        log.info('makeqrcode    Response.Status=%s' % response.status_code)
+        if (response.status_code == 200):
+            return response.content
+        else:
+            return ''
+    except Exception as e:
+        log.error(e)
         return ''
 
-def getopenid(js_code):
-    grant_type = 'authorization_code'
-    url = 'https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code' % (
-        appid, secret, js_code)
 
-    response = requests.get(url)
-    if (response.status_code == 200):
-        result = json.loads(response.text)
-        return result['openid']
-    else:
+def getopenid(js_code):
+    try:
+        grant_type = 'authorization_code'
+        url = 'https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code' % (
+            appid, secret, js_code)
+        log.info('getopenid RequestUrl=%s' % url)
+        response = requests.get(url)
+        log.info('getopenid Response.Status=%s  Response.text=%s' %
+                 (response.status_code,response.text))
+        if (response.status_code == 200):
+            result = json.loads(response.text)
+            return result['openid']
+        else:
+            return ''
+    except Exception as e:
+        log.error(e)
         return ''
 
 def getaccesstoken():
-
-    url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s' % (
-        appid, secret)
-
-    response = requests.get(url)
-    if (response.status_code == 200):
-        result = json.loads(response.text)
-        return result['access_token']
-    else:
+    try:
+        url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s' % (
+            appid, secret)
+        log.info('getaccesstoken RequestUrl=%s' % url)
+        response = requests.get(url)
+        log.info('getaccesstoken Response.Status=%s  Response.text=%s' %
+                (response.status_code, response.text))
+        if (response.status_code == 200):
+            result = json.loads(response.text)
+            return result['access_token']
+        else:
+            return ''
+    except Exception as e:
+        log.error(e)
         return ''
 
 class DateEncoder(json.JSONEncoder):
