@@ -1,0 +1,8 @@
+.vscode/*
+*.pyc
+*.log
+da/__pycache__/*
+main/__pycache__/*
+main/migrations/*
+.DS_Store
+da.code-workspace
