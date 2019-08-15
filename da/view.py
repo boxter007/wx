@@ -28,16 +28,15 @@ def getaccountinfo(request):
     if id == '':
         context['result'] = False
     else:
-        usrobj = models.User.objects.filter(id=id)
+        usrobj = models.User.objects.filter(wxid=id)
         curUser = None
         if (usrobj.exists()):
             curUser = usrobj[0]
             context['para1'] = curUser.balance_redpack  #可用积分
             context['para2'] = curUser.balance  #累计积分
-            context['para3'] = models.Account.objects.filter(
-                wxid=id).aggregate(total=Sum('credit'))['total']  #获得积分
-            context['para4'] = models.Account.objects.filter(
-                wxid=id).aggregate(total=Sum('debit'))['total']  #送出积分
+            context['para3'] = curUser.transaction_to_user.aggregate(total=Sum('credit'))['total'] #获得积分
+            context['para4'] = curUser.transaction_to_user.aggregate(total=Sum('debit'))['total']  #送出积分
+
 
         context['wxid'] = id
         context['result'] = True
