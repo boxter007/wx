@@ -139,12 +139,14 @@ LOGGING = {
     'formatters': {
         # 详细的日志格式
         'standard': {
-            'format': '[%(asctime)s][%(threadName)s:%(thread)d][task_id:%(name)s][%(filename)s:%(lineno)d]'
-                      '[%(levelname)s][%(message)s]'
+            'format':
+            '[%(asctime)s][%(threadName)s:%(thread)d][task_id:%(name)s][%(filename)s:%(lineno)d]'
+            '[%(levelname)s][%(message)s]'
         },
         # 简单的日志格式
         'simple': {
-            'format': '[%(levelname)s][%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
+            'format':
+            '[%(levelname)s][%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
         },
         # 定义一个特殊的日志格式
         'collect': {
@@ -199,9 +201,8 @@ LOGGING = {
     'loggers': {
         # 名为 'collect'的logger还单独处理
         'collect': {
-            'handlers': ['console'],
+            'handlers': ['default'],
             'level': 'INFO',
-            'propagate': True,  # 向不向更高级别的logger传递
         }
     },
 }
