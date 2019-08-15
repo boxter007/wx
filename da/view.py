@@ -22,28 +22,32 @@ log = logging.getLogger("collect")
 -- result:是否执行成功
 '''
 def getaccountinfo(request):
-    context = {}
-    id = request.GET.get('id', '')
-    log.info('Method:getaccountinfo ID=%s' % id)
-    if id == '':
-        context['result'] = False
-    else:
-        usrobj = models.User.objects.filter(wxid=id)
-        curUser = None
-        if (usrobj.exists()):
-            curUser = usrobj[0]
-            context['para1'] = curUser.balance_redpack  #可用积分
-            context['para2'] = curUser.balance  #累计积分
-            context['para3'] = curUser.transaction_to_user.aggregate(total=Sum('credit'))['total'] #获得积分
-            context['para4'] = curUser.transaction_to_user.aggregate(total=Sum('debit'))['total']  #送出积分
+    try:
+        context = {}
+        id = request.GET.get('id', '')
+        log.info('Method:getaccountinfo ID=%s' % id)
+        if id == '':
+            context['result'] = False
+        else:
+            usrobj = models.User.objects.filter(wxid=id)
+            curUser = None
+            if (usrobj.exists()):
+                curUser = usrobj[0]
+                context['para1'] = curUser.balance_redpack  #可用积分
+                context['para2'] = curUser.balance  #累计积分
+                context['para3'] = curUser.transaction_to_user.aggregate(total=Sum('credit'))['total'] #获得积分
+                context['para4'] = curUser.transaction_to_user.aggregate(total=Sum('debit'))['total']  #送出积分
 
 
-        context['wxid'] = id
-        context['result'] = True
+            context['wxid'] = id
+            context['result'] = True
 
-    result = json.dumps(context)
-    log.info('Method:getaccountinfo ID=%s       Return=%s' % (id, result))
-    return HttpResponse(result, content_type='application/json')
+        result = json.dumps(context)
+        log.info('Method:getaccountinfo ID=%s       Return=%s' % (id, result))
+        return HttpResponse(result, content_type='application/json')
+    except Exception as e:
+        log.error(e)
+        return HttpResponse('', content_type='application/json')
 
 
 '''
@@ -63,32 +67,37 @@ def getaccountinfo(request):
 -- result:是否执行成功
 '''
 def gettop5(request):
-    context = {}
-    id = request.GET.get('id', '')
-    log.info('Method:gettop5 ID=%s' % id)
-    if id == '':
-        context['result'] = False
-    else:
+    try:
+        context = {}
+        id = request.GET.get('id', '')
+        log.info('Method:gettop5 ID=%s' % id)
+        if id == '':
+            context['result'] = False
+        else:
 
-        context['para1'] = []
-        r = list(
-            models.User.objects.values('wxid','name','balance','balance_redpack').order_by('-balance'))  #积分排名
+            context['para1'] = []
+            r = list(
+                models.User.objects.exclude(wxid=-1).values(
+                    'wxid', 'name', 'balance',
+                    'balance_redpack').order_by('-balance'))  #积分排名
+            i = 0
+            j = 0
+            for item in r:
+                if item['wxid'] != id:
+                    i = i + 1
+                if j < 5:
+                    context['para1'].append(item)
+                    j = j + 1
 
-        i = 0
-        j = 0
-        for item in r:
-            if item['wxid'] != id:
-                i = i + 1
-            if j < 5:
-                context['para1'].append(item)
-                j = j + 1
-
-        context['para2'] = i
-        context['result'] = True
-    context['wxid'] = id
-    result = json.dumps(context)
-    log.info('Method:gettop5 ID=%s       Return=%s' % (id, result))
-    return HttpResponse(result, content_type='application/json')
+            context['para2'] = i
+            context['result'] = True
+        context['wxid'] = id
+        result = json.dumps(context)
+        log.info('Method:gettop5 ID=%s       Return=%s' % (id, result))
+        return HttpResponse(result, content_type='application/json')
+    except Exception as e:
+        log.error(e)
+        return HttpResponse('', content_type='application/json')
 
 
 '''
@@ -167,12 +176,11 @@ def transaction(request):
     log.info('Method:transaction ID=%s  amount=%s   payer=%s    receiver=%s' %
              (id, amount, id, receiver))
     context['wxid'] = id
-    if id =='' or amount =='' or  receiver == '':
+    if id =='' or amount =='' or  receiver == '' or id == receiver:
         context['result'] = False
     else:
         context['result'] = implement.transfer(id, receiver, int(amount), 2,
                                                remark)
-
     result = json.dumps(context)
     log.info('Method:transaction ID=%s       Return=%s' % (id, result))
     return HttpResponse(result, content_type='application/json')
