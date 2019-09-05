@@ -11,6 +11,7 @@ log = logging.getLogger("collect")
 appid = 'wx8ddff9ff64bb5ea1'
 secret = 'c9cf1132c4b8376f16768638ae384f22'
 
+
 def transfer(user, counterparty, amount,ttype,remark):
     try:
         with transaction.atomic():
