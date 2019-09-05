@@ -8,8 +8,8 @@ import requests
 import logging
 log = logging.getLogger("collect")
 
-appid = 'wxad901a90a74d3b9e'
-secret = 'dcc381d508b71bdcd093a7ea43c1e092'
+appid = 'wx8ddff9ff64bb5ea1'
+secret = 'c9cf1132c4b8376f16768638ae384f22'
 
 def transfer(user, counterparty, amount,ttype,remark):
     try:
