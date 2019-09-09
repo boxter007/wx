@@ -8,8 +8,8 @@ import requests
 import logging
 log = logging.getLogger("collect")
 
-appid = 'wx8ddff9ff64bb5ea1'
-secret = 'c9cf1132c4b8376f16768638ae384f22'
+appid = 'wxf29113dcf17a3978'
+secret = 'f7add42fb8cdfc50549f3ced26f89264'
 
 
 def transfer(user, counterparty, amount,ttype,remark):
@@ -152,8 +152,8 @@ def makeqrcode(openid):
 
         data = json.dumps({
             'width': 480,
-            'path': 'page/index/index?id=%s' % openid,
-            'auto_color':True
+            'path': 'pages/trade/trade?scene=%s' % openid,
+            'auto_color': True
         })
         log.info('makeqrcode    RequestUrl=%s   PostData=%s' % (url, data))
         response = requests.post(url, data)
@@ -165,7 +165,6 @@ def makeqrcode(openid):
     except Exception as e:
         log.error(e)
         return ''
-
 
 def getopenid(js_code):
     try:
