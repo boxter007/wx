@@ -112,6 +112,7 @@ def gettop5(request):
 def getqrcode(request):
     context = None
     openid = request.GET.get('id', '')
+    log.info('Method:getqrcode id=%s' % openid)
     usr = models.User.objects.filter(wxid=openid)
     if (usr.exists()):
         user = usr[0]
@@ -145,7 +146,7 @@ def adduser(request):
             user = models.User.objects.create(wxid=openid,
                                               name=name,
                                               qrcode=qrcode)
-            implement.transfer('-1', openid, 200, 2, '初始化红包')
+            implement.transfer('-1', openid, 200, 0, '初始化红包')
         context['wxid'] = openid
         context['result'] = True
 
