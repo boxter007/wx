@@ -119,14 +119,46 @@ def getqrcode(request):
         context = user.qrcode
     return HttpResponse(context, content_type='image/jpeg')
 
+'''
+### 查询用户
+- Method: GET
+- Url:   http://ip:port/getuser/
+- para:
+-- id：微信openid
+- Return
+-- wxid:微信openid
+-- name:用户昵称
+-- url:用户头像地址
+-- result:是否执行成功
+'''
+def getuser(request):
+    context = {}
+    id = request.GET.get('id, '')
+    log.info('Method:getuser id=%s ' % id)
+    if id == '' :
+        context['result'] = False
+    else:
+        user = models.User.objects.filter(wxid=id)
+        if (user.exists()):
+            context['wxid'] = id
+            context['name'] = user[0].name
+            context['url'] = user[0].img
+            context['result'] = True
+        else:
+            context['result'] = False
+
+    result = json.dumps(context)
+    log.info('Method:getuser ID=%s       Return=%s' % (id, result))
+    return HttpResponse(result, content_type='application/json')
+
 
 '''
 ### 新增用户(返回的openid需要缓存在客户端)
 - Method: GET
 - Url:   http://ip:port/adduser/
 - para:
-- code：wx.login返回的code
-- name：微信昵称
+-- code：wx.login返回的code
+-- name：微信昵称
 - Return
 -- wxid:微信openid
 -- result:是否执行成功
@@ -135,6 +167,7 @@ def adduser(request):
     context = {}
     id = request.GET.get('code', '')
     name = request.GET.get('name', '')
+
     log.info('Method:adduser Code=%s  name=%s' % (id, name))
     if id == '' or name == '' :
         context['result'] = False
@@ -145,7 +178,8 @@ def adduser(request):
             qrcode = implement.makeqrcode(openid)
             user = models.User.objects.create(wxid=openid,
                                               name=name,
-                                              qrcode=qrcode)
+                                              qrcode=qrcode,
+                                              img = url)
             implement.transfer('-1', openid, 200, 0, '初始化红包')
         context['wxid'] = openid
         context['result'] = True
