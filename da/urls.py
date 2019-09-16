@@ -10,4 +10,5 @@ urlpatterns = [
     path('transaction/', view.transaction),
     path('transactionhistory/', view.transactionhistory),
     path('test/', view.test),
+    path('getuser/', view.getuser)
 ]
