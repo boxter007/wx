@@ -133,7 +133,7 @@ def getqrcode(request):
 '''
 def getuser(request):
     context = {}
-    id = request.GET.get('id, '')
+    id = request.GET.get('id', '')
     log.info('Method:getuser id=%s ' % id)
     if id == '' :
         context['result'] = False
@@ -167,8 +167,8 @@ def adduser(request):
     context = {}
     id = request.GET.get('code', '')
     name = request.GET.get('name', '')
-
-    log.info('Method:adduser Code=%s  name=%s' % (id, name))
+    url = request.GET.get('url', '')
+    log.info('Method:adduser Code=%s  name=%s url=%s' % (id, name,url))
     if id == '' or name == '' :
         context['result'] = False
     else:
