@@ -137,9 +137,8 @@ def gettransferlist(user):
             usrobj = usrobjs[0]
             trans = usrobj.transaction_to_user.values(
                 'userid__name', 'debit', 'credit', 'balance',
-                'balance_redpack', 'counterparty__name',
-                'transaction_time').order_by(
-                    '-transaction_time')
+                'balance_redpack', 'counterparty__name', 'transaction_time',
+                'transactionid').order_by('-transaction_time')
             return list(trans)
     except Exception as e:
         log.error(e)
