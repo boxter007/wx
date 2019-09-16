@@ -164,26 +164,29 @@ def getuser(request):
 -- result:是否执行成功
 '''
 def adduser(request):
-    context = {}
-    id = request.GET.get('code', '')
-    name = request.GET.get('name', '')
-    url = request.GET.get('url', '')
-    log.info('Method:adduser Code=%s  name=%s url=%s' % (id, name,url))
-    if id == '' or name == '' :
-        context['result'] = False
-    else:
-        openid = implement.getopenid(id)
-        user = models.User.objects.filter(wxid=openid)
-        if (not user.exists()):
-            qrcode = implement.makeqrcode(openid)
-            user = models.User.objects.create(wxid=openid,
-                                              name=name,
-                                              qrcode=qrcode,
-                                              img = url)
-            implement.transfer('-1', openid, 200, 0, '初始化红包')
-        context['wxid'] = openid
-        context['result'] = True
+    try:
+        context = {}
+        id = request.GET.get('code', '')
+        name = request.GET.get('name', '')
+        url = request.GET.get('url', '')
+        log.info('Method:adduser Code=%s  name=%s url=%s' % (id, name,url))
+        if id == '' or name == '' :
+            context['result'] = False
+        else:
+            openid = implement.getopenid(id)
+            user = models.User.objects.filter(wxid=openid)
+            if (not user.exists()):
+                qrcode = implement.makeqrcode(openid)
 
+                user = models.User.objects.create(wxid=openid,
+                                                name=name,
+                                                qrcode=qrcode,
+                                                img = url)
+                implement.transfer('-1', openid, 200, 0, '初始化红包')
+            context['wxid'] = openid
+            context['result'] = True
+    except Exception as e:
+        log.error(e)
     result = json.dumps(context)
     log.info('Method:adduser ID=%s       Return=%s' % (id, result))
     return HttpResponse(result, content_type='application/json')
