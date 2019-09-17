@@ -4,9 +4,9 @@ from django.db import models
 # Create your models here.
 class User(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
-    img = models.CharField(max_length=100)
-    wxid = models.CharField(max_length=100)
+    name = models.CharField(max_length=1000)
+    img = models.CharField(max_length=1000)
+    wxid = models.CharField(max_length=1000)
     balance = models.IntegerField(default=0)
     balance_redpack = models.IntegerField(default=0)
     qrcode = models.BinaryField(max_length=1000000)

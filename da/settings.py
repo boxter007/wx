@@ -140,8 +140,8 @@ LOGGING = {
         # 详细的日志格式
         'standard': {
             'format':
-            '[%(asctime)s][%(threadName)s:%(thread)d][task_id:%(name)s][%(filename)s:%(lineno)d]'
-            '[%(levelname)s][%(message)s]'
+            '["@timestamp": "%(asctime)s","%(threadName)s": "%(thread)d","%(filename)s": "%(lineno)d",'
+            '"level": "%(levelname)s", "content":{%(message)s}]'
         },
         # 简单的日志格式
         'simple': {

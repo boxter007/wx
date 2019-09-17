@@ -25,7 +25,7 @@ def getaccountinfo(request):
     try:
         context = {}
         id = request.GET.get('id', '')
-        log.info('Method:getaccountinfo ID=%s' % id)
+        log.info('"Method":"getaccountinfo","ID":"%s"' % id)
         if id == '':
             context['result'] = False
         else:
@@ -43,7 +43,7 @@ def getaccountinfo(request):
             context['result'] = True
 
         result = json.dumps(context)
-        log.info('Method:getaccountinfo ID=%s       Return=%s' % (id, result))
+        log.info('"Method":"getaccountinfo","ID":"%s","Return":%s' % (id, result))
         return HttpResponse(result, content_type='application/json')
     except Exception as e:
         log.error(e)
@@ -70,7 +70,7 @@ def gettop5(request):
     try:
         context = {}
         id = request.GET.get('id', '')
-        log.info('Method:gettop5 ID=%s' % id)
+        log.info('"Method":"gettop5","ID":"%s"' % id)
         if id == '':
             context['result'] = False
         else:
@@ -93,7 +93,7 @@ def gettop5(request):
             context['result'] = True
         context['wxid'] = id
         result = json.dumps(context)
-        log.info('Method:gettop5 ID=%s       Return=%s' % (id, result))
+        log.info('"Method":"gettop5","ID":"%s","Return":%s' % (id, result))
         return HttpResponse(result, content_type='application/json')
     except Exception as e:
         log.error(e)
@@ -112,11 +112,12 @@ def gettop5(request):
 def getqrcode(request):
     context = None
     openid = request.GET.get('id', '')
-    log.info('Method:getqrcode id=%s' % openid)
+    log.info('"Method":"getqrcode","id":"%s"' % openid)
     usr = models.User.objects.filter(wxid=openid)
     if (usr.exists()):
         user = usr[0]
         context = user.qrcode
+    #log.info('"Method":"getqrcode","ID":"%s","Return":%s' % (openid,context))
     return HttpResponse(context, content_type='image/jpeg')
 
 '''
@@ -134,7 +135,7 @@ def getqrcode(request):
 def getuser(request):
     context = {}
     id = request.GET.get('id', '')
-    log.info('Method:getuser id=%s ' % id)
+    log.info('"Method":"getuser","id":"%s"' % id)
     if id == '' :
         context['result'] = False
     else:
@@ -148,7 +149,7 @@ def getuser(request):
             context['result'] = False
 
     result = json.dumps(context)
-    log.info('Method:getuser ID=%s       Return=%s' % (id, result))
+    log.info('"Method":"getuser","ID":"%s","Return":%s' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -169,7 +170,7 @@ def adduser(request):
         id = request.GET.get('code', '')
         name = request.GET.get('name', '')
         url = request.GET.get('url', '')
-        log.info('Method:adduser Code=%s  name=%s url=%s' % (id, name,url))
+        log.info('"Method":"adduser","Code"="%s","name":"%s","url":"%s"' % (id, name,url))
         if id == '' or name == '' :
             context['result'] = False
         else:
@@ -177,7 +178,7 @@ def adduser(request):
             user = models.User.objects.filter(wxid=openid)
             if (not user.exists()):
                 qrcode = implement.makeqrcode(openid)
-
+                log.info("Method:adduser qrcode=%s" , qrcode)
                 user = models.User.objects.create(wxid=openid,
                                                 name=name,
                                                 qrcode=qrcode,
@@ -188,7 +189,7 @@ def adduser(request):
     except Exception as e:
         log.error(e)
     result = json.dumps(context)
-    log.info('Method:adduser ID=%s       Return=%s' % (id, result))
+    log.info('"Method":"adduser","ID","%s","Return":%s' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -211,7 +212,7 @@ def transaction(request):
     amount = request.GET.get('amount', 0)
     receiver = request.GET.get('receiver', '')
     remark = request.GET.get('remark', '')
-    log.info('Method:transaction ID=%s  amount=%s   payer=%s    receiver=%s' %
+    log.info('"Method":"transaction","ID":"%s","amount":"%s","payer":"%s","receiver":"%s"' %
              (id, amount, id, receiver))
     context['wxid'] = id
     if id =='' or amount =='' or  receiver == '' or id == receiver:
@@ -220,7 +221,7 @@ def transaction(request):
         context['result'] = implement.transfer(id, receiver, int(amount), 2,
                                                remark)
     result = json.dumps(context)
-    log.info('Method:transaction ID=%s       Return=%s' % (id, result))
+    log.info('"Method":"transaction","ID"="%s","Return":%s' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -246,7 +247,7 @@ def transaction(request):
 def transactionhistory(request):
     context = {}
     id = request.GET.get('id', '')
-    log.info('Method:transactionhistory ID=%s ' % (id))
+    log.info('"Method":"transactionhistory","ID":"%s"' % (id))
     context['wxid'] = id
     if id == '':
         context['result'] = False
@@ -255,7 +256,8 @@ def transactionhistory(request):
         context['result'] = True
 
     result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
-    log.info('Method:transactionhistory ID=%s       Return=%s' % (id, result))
+    log.info('"Method":"transactionhistory","ID":"%s","Return":%s' %
+             (id, result))
     return HttpResponse(result, content_type='application/json')
 
 def test(request):

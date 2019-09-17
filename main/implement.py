@@ -154,9 +154,9 @@ def makeqrcode(openid):
             'path': 'pages/trade/trade?scene=%s' % openid,
             'auto_color': True
         })
-        log.info('makeqrcode    RequestUrl=%s   PostData=%s' % (url, data))
+        log.info('"method":"makeqrcode","RequestUrl":"%s","PostData":"%s"' % (url, data))
         response = requests.post(url, data)
-        log.info('makeqrcode    Response.Status=%s' % response.status_code)
+        log.info('"method":"makeqrcode","Response.Status":"%s"' % response.status_code)
         if (response.status_code == 200):
             return response.content
         else:
@@ -170,9 +170,9 @@ def getopenid(js_code):
         grant_type = 'authorization_code'
         url = 'https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code' % (
             appid, secret, js_code)
-        log.info('getopenid RequestUrl=%s' % url)
+        log.info('"method":"getopenid","RequestUrl":"%s"' % url)
         response = requests.get(url)
-        log.info('getopenid Response.Status=%s  Response.text=%s' %
+        log.info('"method":"getopenid","Response.Status":"%s","Response.text":"%s"' %
                  (response.status_code,response.text))
         if (response.status_code == 200):
             result = json.loads(response.text)
@@ -187,9 +187,9 @@ def getaccesstoken():
     try:
         url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s' % (
             appid, secret)
-        log.info('getaccesstoken RequestUrl=%s' % url)
+        log.info('"method":"getaccesstoken","RequestUrl":"%s"' % url)
         response = requests.get(url)
-        log.info('getaccesstoken Response.Status=%s  Response.text=%s' %
+        log.info('"method":"getaccesstoken","Response.Status":"%s","Response.text":"%s"' %
                 (response.status_code, response.text))
         if (response.status_code == 200):
             result = json.loads(response.text)
