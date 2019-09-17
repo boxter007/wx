@@ -42,7 +42,7 @@ def getaccountinfo(request):
             context['wxid'] = id
             context['result'] = True
 
-        result = json.dumps(context)
+        result = json.dumps(context, ensure_ascii=False)
         log.info('"Method":"getaccountinfo","ID":"%s","Return":%s' % (id, result))
         return HttpResponse(result, content_type='application/json')
     except Exception as e:
@@ -92,7 +92,7 @@ def gettop5(request):
             context['para2'] = i
             context['result'] = True
         context['wxid'] = id
-        result = json.dumps(context)
+        result = json.dumps(context, ensure_ascii=False)
         log.info('"Method":"gettop5","ID":"%s","Return":%s' % (id, result))
         return HttpResponse(result, content_type='application/json')
     except Exception as e:
@@ -148,7 +148,7 @@ def getuser(request):
         else:
             context['result'] = False
 
-    result = json.dumps(context)
+    result = json.dumps(context, ensure_ascii=False)
     log.info('"Method":"getuser","ID":"%s","Return":%s' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
@@ -188,7 +188,7 @@ def adduser(request):
             context['result'] = True
     except Exception as e:
         log.error(e)
-    result = json.dumps(context)
+    result = json.dumps(context, ensure_ascii=False)
     log.info('"Method":"adduser","ID","%s","Return":%s' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
@@ -220,7 +220,7 @@ def transaction(request):
     else:
         context['result'] = implement.transfer(id, receiver, int(amount), 2,
                                                remark)
-    result = json.dumps(context)
+    result = json.dumps(context, ensure_ascii=False)
     log.info('"Method":"transaction","ID"="%s","Return":%s' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
