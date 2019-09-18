@@ -140,8 +140,8 @@ LOGGING = {
         # 详细的日志格式
         'standard': {
             'format':
-            '["@timestamp": "%(asctime)s","%(threadName)s": "%(thread)d","%(filename)s": "%(lineno)d",'
-            '"level": "%(levelname)s", "content":{%(message)s}]'
+            '[%(asctime)s.%(msecs)03d][%(threadName)s:%(thread)d][%(filename)s:%(lineno)d][%(levelname)s][%(message)s]',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
         },
         # 简单的日志格式
         'simple': {
@@ -191,7 +191,7 @@ LOGGING = {
     'loggers': {
         # 名为 'collect'的logger还单独处理
         'collect': {
-            'handlers': ['default','error'],
+            'handlers': ['default', 'error'],
             'level': 'INFO',
         }
     },
