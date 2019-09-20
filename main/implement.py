@@ -15,7 +15,7 @@ appid = 'wxf29113dcf17a3978'
 secret = 'f7add42fb8cdfc50549f3ced26f89264'
 
 
-def transfer(user, counterparty, amount,ttype,remark):
+def transfer(user, counterparty, amount,ttype,remark,formid):
     try:
         with transaction.atomic():
             A = models.User.objects.filter(wxid=user)
@@ -131,6 +131,12 @@ def transfer(user, counterparty, amount,ttype,remark):
     except Exception as e:
         log.error(e)
         return False
+    if (formid != ''):
+        firetransmessage(user, A.name, counterparty,B.name, formid, amount,
+                         remark,
+                         datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                         transid)
+
     return True
 
 
@@ -201,6 +207,26 @@ def makeqrcode(openid):
     except Exception as e:
         log.error(e)
         return ''
+
+
+def firetransmessage(sender, sendername, receiver, receivername, formid, amount,
+                     remark, time, transid):
+    try:
+        url = 'https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token=%s' % getaccesstoken()
+        jsontemplate = '{"touser": "%s","template_id": "%s","form_id": "%s","data": {"keyword1": {"value": "%s"},"keyword2": {"value": "%s"},"keyword3": {"value": "%s"} ,"keyword4": {"value": "%s"},"keyword5": {"value": "%s"}}}'
+        headers = {'content-type': 'charset=utf8'}
+
+        data = jsontemplate % (
+            sender, 'XzN8Itq8kM7m5xSL9fG4GokRWfEzl7JbZeq3q0sPDbY', formid,
+            transid, receivername, time, amount, remark)
+        data = data.encode('UTF8')
+        response = requests.post(url, data,headers = headers)
+        data = jsontemplate % (
+            receiver, 'fAHigjdz_1wFs3zGjeOJeLn6Ob5z-fJaRUi94TuUC0M', formid,
+            transid, sendername, time, amount, remark)
+        response = requests.post(url,data)
+    except Exception as e:
+        log.error(e)
 
 def getopenid(js_code):
     try:

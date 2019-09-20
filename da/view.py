@@ -8,6 +8,7 @@ from main import implement
 from django.db.models import Sum
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import F
+import time
 log = logging.getLogger("collect")
 '''
 ### 根据客户ID获取其账户信息
@@ -216,10 +217,11 @@ def adduser(request):
 '''
 def transaction(request):
     context = {}
-    id = request.GET.get('id', '')
-    amount = request.GET.get('amount', 0)
-    receiver = request.GET.get('receiver', '')
-    remark = request.GET.get('remark', '')
+    id = request.POST.get('id', '')
+    amount = request.POST.get('amount', 0)
+    receiver = request.POST.get('receiver', '')
+    remark = request.POST.get('remark', '')
+    formid = request.POST.get('formid', '')
     log.info('"Method":"transaction","ID":"%s","amount":"%s","payer":"%s","receiver":"%s"' %
              (id, amount, id, receiver))
     context['wxid'] = id
@@ -227,9 +229,13 @@ def transaction(request):
         context['result'] = False
     else:
         context['result'] = implement.transfer(id, receiver, int(amount), 2,
-                                               remark)
+                                               remark, formid)
     result = json.dumps(context, ensure_ascii=False)
     log.info('"Method":"transaction","ID"="%s","Return":%s' % (id, result))
+
+
+
+
     return HttpResponse(result, content_type='application/json')
 
 
