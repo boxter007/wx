@@ -6,6 +6,8 @@ import logging
 from main import models
 from main import implement
 from django.db.models import Sum
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 log = logging.getLogger("collect")
 '''
 ### 根据客户ID获取其账户信息
@@ -18,6 +20,7 @@ log = logging.getLogger("collect")
 -- para2:累计积分
 -- para3:获得的积分
 -- para4:送出的积分
+-- para5:可兑换积分
 -- wxid:微信openid
 -- result:是否执行成功
 '''
@@ -37,7 +40,7 @@ def getaccountinfo(request):
                 context['para2'] = curUser.balance  #累计积分
                 context['para3'] = curUser.transaction_to_user.aggregate(total=Sum('credit'))['total'] #获得积分
                 context['para4'] = curUser.transaction_to_user.aggregate(total=Sum('debit'))['total']  #送出积分
-
+                context['para5'] = curUser.balance - curUser.balance_redpack  #送出积分
 
             context['wxid'] = id
             context['result'] = True
@@ -182,7 +185,8 @@ def adduser(request):
                 user = models.User.objects.create(wxid=openid,
                                                 name=name,
                                                 qrcode=qrcode,
-                                                img = url)
+                                                img=url)
+                # 此处需要修改手动充值
                 implement.transfer('-1', openid, 200, 0, '初始化红包')
             context['wxid'] = openid
             context['result'] = True
@@ -232,6 +236,7 @@ def transaction(request):
 - Url:   http://ip:port/transactionhistory/
 - para:
 -- id：微信openid
+-- page:页码，默认为1。
 - Return
 -- wxid:微信openid
 -- para1:列表
@@ -242,17 +247,23 @@ def transaction(request):
 --- balance_redpack：红包余额
 --- counterparty__name：交易对手
 --- transaction_time：交易时间
--- result:是否执行成功
+--- transactionid:交易id
+--- userid__img：交易对手头像
+-- currentpage: 当前页
+-- totalpages: 总页数
+-- result: 是否执行成功
 '''
 def transactionhistory(request):
     context = {}
     id = request.GET.get('id', '')
-    log.info('"Method":"transactionhistory","ID":"%s"' % (id))
+    page = request.GET.get('page', 1)
+    log.info('"Method":"transactionhistory","ID":"%s","page":"%s"' % (id,page))
     context['wxid'] = id
     if id == '':
         context['result'] = False
     else:
-        context['para1'] = implement.gettransferlist(id)
+        r2,context['totalpages'],context['currentpage'] = implement.gettransferlist(id, page)
+        context['para1'] = list(r2)
         context['result'] = True
 
     result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)

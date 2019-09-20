@@ -6,6 +6,8 @@ import json
 import datetime
 import requests
 import logging
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 log = logging.getLogger("collect")
 
 appid = 'wxf29113dcf17a3978'
@@ -130,7 +132,8 @@ def transfer(user, counterparty, amount,ttype,remark):
         return False
     return True
 
-def gettransferlist(user):
+
+def gettransferlist(user, page):
     try:
         usrobjs = models.User.objects.filter(wxid=user)
         if (usrobjs.exists()):
@@ -138,8 +141,16 @@ def gettransferlist(user):
             trans = usrobj.transaction_to_user.values(
                 'userid__name', 'debit', 'credit', 'balance',
                 'balance_redpack', 'counterparty__name', 'transaction_time',
-                'transactionid').order_by('-transaction_time')
-            return list(trans)
+                'transactionid', 'userid__img').order_by('-transaction_time')
+            r1 = Paginator(trans, 10)
+            try:
+                r2 = r1.page(page)
+            except PageNotAnInteger:
+                r2 = r1.page(1)
+            except EmptyPage:
+                r2 = r1.page(r1.num_pages)
+
+            return r2, r1.num_pages,r2.number
     except Exception as e:
         log.error(e)
         return None
