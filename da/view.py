@@ -7,7 +7,7 @@ from main import models
 from main import implement
 from django.db.models import Sum
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from django.db.models import F
 log = logging.getLogger("collect")
 '''
 ### 根据客户ID获取其账户信息
@@ -59,11 +59,13 @@ def getaccountinfo(request):
 - Url:   http://ip:port/gettop5/
 - para:
 -- id：微信openid
+-- count:获取排行榜名单的数目
 - Return:
 -- para1:排名列表
 --- wxid:微信openid
 --- name:微信昵称
---- balance:累计积分余额
+--- img:微信头像
+--- balance5:累计积分余额
 --- balance_redpack:可送出积分
 -- para2:名次
 -- wxid:微信openid
@@ -73,26 +75,28 @@ def gettop5(request):
     try:
         context = {}
         id = request.GET.get('id', '')
-        log.info('"Method":"gettop5","ID":"%s"' % id)
+        count = int(request.GET.get('count', 10))
+        log.info('"Method":"gettop5","ID":"%s","count":"%s"' % (id,count))
         if id == '':
             context['result'] = False
         else:
 
             context['para1'] = []
             r = list(
-                models.User.objects.exclude(wxid=-1).values(
-                    'wxid', 'name', 'balance',
-                    'balance_redpack').order_by('-balance'))  #积分排名
-            i = 0
+                models.User.objects.exclude(wxid=-1).annotate(
+                    balance5=F('balance') - F('balance_redpack')).values(
+                        'wxid', 'name','balance_redpack','img',
+                        'balance5').order_by('-balance5'))  #积分排名
+            me = 0
             j = 0
             for item in r:
-                if item['wxid'] != id:
-                    i = i + 1
-                if j < 5:
+                if item['wxid'] == id:
+                    me = item
+                if j < count:
                     context['para1'].append(item)
                     j = j + 1
 
-            context['para2'] = i
+            context['para2'] = r.index(me)+1
             context['result'] = True
         context['wxid'] = id
         result = json.dumps(context, ensure_ascii=False)
