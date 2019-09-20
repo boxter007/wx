@@ -248,6 +248,7 @@ def transaction(request):
 --- counterparty__name：交易对手
 --- transaction_time：交易时间
 --- transactionid:交易id
+--- userid__img：交易方头像
 --- counterparty__img：交易对手头像
 --- remark: 交易备注
 -- currentpage: 当前页
