@@ -235,7 +235,7 @@ def transaction(request):
 - Method: GET
 - Url:   http://ip:port/transactionhistory/
 - para:
--- id：微信openid
+-- id：微信openid,不填写则表示查询全体人员的全部交易记录
 -- page:页码，默认为1。
 - Return
 -- wxid:微信openid
@@ -248,7 +248,8 @@ def transaction(request):
 --- counterparty__name：交易对手
 --- transaction_time：交易时间
 --- transactionid:交易id
---- userid__img：交易对手头像
+--- counterparty__img：交易对手头像
+--- remark: 交易备注
 -- currentpage: 当前页
 -- totalpages: 总页数
 -- result: 是否执行成功
@@ -260,12 +261,12 @@ def transactionhistory(request):
     log.info('"Method":"transactionhistory","ID":"%s","page":"%s"' % (id,page))
     context['wxid'] = id
     if id == '':
-        context['result'] = False
+        r2, context['totalpages'], context['currentpage'] = implement.getalltransferlist(page)
     else:
-        r2,context['totalpages'],context['currentpage'] = implement.gettransferlist(id, page)
-        context['para1'] = list(r2)
-        context['result'] = True
+        r2, context['totalpages'], context['currentpage'] = implement.gettransferlist(id, page)
 
+    context['para1'] = list(r2)
+    context['result'] = True
     result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
     log.info('"Method":"transactionhistory","ID":"%s","Return":%s' %
              (id, result))

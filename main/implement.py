@@ -1,6 +1,7 @@
 from django.db import transaction
 from . import models
 from django.db.models import F
+from django.db.models import Q
 import uuid
 import json
 import datetime
@@ -141,7 +142,7 @@ def gettransferlist(user, page):
             trans = usrobj.transaction_to_user.values(
                 'userid__name', 'debit', 'credit', 'balance',
                 'balance_redpack', 'counterparty__name', 'transaction_time',
-                'transactionid', 'userid__img').order_by('-transaction_time')
+                'transactionid', 'userid__img','remark').order_by('-transaction_time')
             r1 = Paginator(trans, 10)
             try:
                 r2 = r1.page(page)
@@ -154,6 +155,31 @@ def gettransferlist(user, page):
     except Exception as e:
         log.error(e)
         return None
+
+def getalltransferlist(page):
+    try:
+        accountobjs = models.Account.objects.exclude(
+            Q(userid_id=1) | Q(counterparty_id=1)).filter(credit = 0)
+        if (accountobjs.exists()):
+            trans = accountobjs.values('userid__name', 'debit', 'credit',
+                                       'balance', 'balance_redpack',
+                                       'counterparty__name',
+                                       'transaction_time', 'transactionid',
+                                       'counterparty__img',
+                                       'remark').order_by('-transaction_time')
+            r1 = Paginator(trans, 10)
+            try:
+                r2 = r1.page(page)
+            except PageNotAnInteger:
+                r2 = r1.page(1)
+            except EmptyPage:
+                r2 = r1.page(r1.num_pages)
+
+            return r2, r1.num_pages,r2.number
+    except Exception as e:
+        log.error(e)
+        return None
+
 
 def makeqrcode(openid):
     try:
