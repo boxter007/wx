@@ -9,7 +9,7 @@ class User(models.Model):
     wxid = models.CharField(max_length=1000)
     balance = models.IntegerField(default=0)
     balance_redpack = models.IntegerField(default=0)
-    qrcode = models.BinaryField(max_length=1000000)
+    qrcode = models.BinaryField()
     createtime = models.DateTimeField(auto_now_add=True)
     lastlogintime = models.DateTimeField(auto_now_add=True)
 
@@ -32,3 +32,8 @@ class Account(models.Model):
     remark = models.CharField(max_length=100)
     transaction_time = models.DateTimeField(auto_now_add=True)
     transactionid = models.CharField(max_length=100)
+
+
+class Remarktag(models.Model):
+    id = models.AutoField(primary_key=True)
+    tag = models.CharField(max_length=100)

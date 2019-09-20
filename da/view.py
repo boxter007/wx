@@ -277,17 +277,23 @@ def transactionhistory(request):
              (id, result))
     return HttpResponse(result, content_type='application/json')
 
-def test(request):
-    context = {}
-    id = request.GET.get('id', '')
-    log.info('Method:test ID=%s ' % (id))
-    if id == '':
-        context['result'] = False
-    else:
-        context['userid'] = id
-        context['para1'] = implement.getaccesstoken()
-        context['result'] = True
 
+'''
+### 获取标签
+- Method: GET
+- Url:   http://ip:port/getmarktag/
+- Return
+-- para1:列表
+--- id:标签编号
+--- tag:标签内容
+-- result:是否执行成功
+'''
+def getmarktag(request):
+    context = {}
+    log.info('"Method":"getmarktag"')
+    tags=models.Remarktag.objects.values('id','tag')
+    context['para1'] = list(tags)
+    context['result'] = True
     result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
-    log.info('Method:test ID=%s       Return=%s' % (id, result))
+    log.info('"Method":"getmarktag","Return":"%s"' % result)
     return HttpResponse(result, content_type='application/json')

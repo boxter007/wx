@@ -9,6 +9,6 @@ urlpatterns = [
     path('adduser/', view.adduser),
     path('transaction/', view.transaction),
     path('transactionhistory/', view.transactionhistory),
-    path('test/', view.test),
-    path('getuser/', view.getuser)
+    path('getuser/', view.getuser),
+    path('getmarktag/', view.getmarktag)
 ]
