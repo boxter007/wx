@@ -286,12 +286,14 @@ def transactionhistory(request):
 -- para1:列表
 --- id:标签编号
 --- tag:标签内容
+--- bottom:该标签送出的积分下限
+--- top:该标签送出的积分上限
 -- result:是否执行成功
 '''
 def getmarktag(request):
     context = {}
     log.info('"Method":"getmarktag"')
-    tags=models.Remarktag.objects.values('id','tag')
+    tags=models.Remarktag.objects.values('id','tag','bottom','top')
     context['para1'] = list(tags)
     context['result'] = True
     result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)

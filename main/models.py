@@ -37,3 +37,5 @@ class Account(models.Model):
 class Remarktag(models.Model):
     id = models.AutoField(primary_key=True)
     tag = models.CharField(max_length=100)
+    bottom = models.IntegerField(default=0)
+    top = models.IntegerField(default=0)
