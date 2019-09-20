@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main'
+    'main',
+    'django_crontab'
 ]
 
 MIDDLEWARE = [
@@ -196,3 +197,8 @@ LOGGING = {
         }
     },
 }
+
+CRONTAB_COMMAND_PREFIX = 'LANG_ALL=zh_cn.UTF-8'
+CRONTAB_COMMAND_SUFFIX = '2>&1'
+CRONJOBS = (('0 1 1 * *', 'da.timer.monthly',
+             '>> %s/timer.log' % BASE_LOG_DIR), )
