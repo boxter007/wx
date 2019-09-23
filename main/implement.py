@@ -170,7 +170,8 @@ def gettransferlist(user, page):
 def getalltransferlist(page):
     try:
         accountobjs = models.Account.objects.exclude(
-            Q(userid_id=1) | Q(counterparty_id=1)).filter(credit = 0)
+            Q(userid_id=1) | Q(counterparty_id=1)
+            | Q(userid_id=2) | Q(userid_id=2)).filter(credit=0)
         if (accountobjs.exists()):
             trans = accountobjs.values(
                 'userid__name', 'debit', 'credit', 'balance',
