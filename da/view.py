@@ -9,6 +9,7 @@ from django.db.models import Sum
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import F
 import time
+import datetime
 log = logging.getLogger("collect")
 '''
 ### 根据客户ID获取其账户信息
@@ -293,6 +294,20 @@ def transactionhistory(request):
         r2, context['totalpages'], context['currentpage'] = implement.getalltransferlist(page)
     else:
         r2, context['totalpages'], context['currentpage'] = implement.gettransferlist(id, page)
+
+    for item in r2:
+        diff = datetime.datetime.now() - item['transaction_time']
+        if diff.days > 0:
+            item['transaction_time'] = str(diff.days) + '天前'
+        elif diff.seconds > 60*60:
+            item['transaction_time'] = str(int(diff.seconds /(60 * 60))) + '小时前'
+        elif diff.seconds > 60:
+            item['transaction_time'] = str(int(diff.seconds / 60)) + '分钟前'
+        else:
+            item['transaction_time'] = str(diff.seconds) + '秒前'
+
+
+
 
     context['para1'] = list(r2)
     context['result'] = True
