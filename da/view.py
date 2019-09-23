@@ -69,6 +69,12 @@ def getaccountinfo(request):
 --- balance5:累计积分余额
 --- balance_redpack:可送出积分
 -- para2:名次
+-- para3:个人积分信息
+--- para1:可用积分
+--- para2:累计积分
+--- para3:获得的积分
+--- para4:送出的积分
+--- para5:可兑换积分
 -- wxid:微信openid
 -- result:是否执行成功
 '''
@@ -97,7 +103,19 @@ def gettop5(request):
                     context['para1'].append(item)
                     j = j + 1
 
-            context['para2'] = r.index(me)+1
+            context['para2'] = r.index(me) + 1
+
+            usrobj = models.User.objects.filter(wxid=id)
+            curUser = None
+            l = {}
+            if (usrobj.exists()):
+                curUser = usrobj[0]
+                l['para1'] = curUser.balance_redpack  #可用积分
+                l['para2'] = curUser.balance  #累计积分
+                l['para3'] = curUser.transaction_to_user.aggregate(total=Sum('credit'))['total'] #获得积分
+                l['para4'] = curUser.transaction_to_user.aggregate(total=Sum('debit'))['total']  #送出积分
+                l['para5'] = curUser.balance - curUser.balance_redpack  #送出积分
+            context['para3'] = l
             context['result'] = True
         context['wxid'] = id
         result = json.dumps(context, ensure_ascii=False)
@@ -217,10 +235,10 @@ def adduser(request):
 '''
 def transaction(request):
     context = {}
-    id = request.POST.get('id', '')
-    amount = request.POST.get('amount', 0)
-    receiver = request.POST.get('receiver', '')
-    remark = request.POST.get('remark', '')
+    id = request.POST.get('id', request.GET.get('id',''))
+    amount = request.POST.get('amount', request.GET.get('amount', 0))
+    receiver = request.POST.get('receiver', request.GET.get('receiver', ''))
+    remark = request.POST.get('remark', request.GET.get('remark', ''))
     formid = request.POST.get('formid', '')
     log.info('"Method":"transaction","ID":"%s","amount":"%s","payer":"%s","receiver":"%s"' %
              (id, amount, id, receiver))
@@ -313,29 +331,55 @@ def getmarktag(request):
 - para:
 -- id：微信openid
 -- amount: 红包金额，拼手气红包为总金额，普通红包为单个红包金额
--- ttype: 红包类型
+-- ttype: 红包类型,0为普通红包，1为拼手气红包
 -- count: 红包数量
 -- remark: 红包备注
 - Return
--- para1:列表
---- id:标签编号
---- tag:标签内容
---- bottom:该标签送出的积分下限
---- top:该标签送出的积分上限
 -- result:是否执行成功
 '''
 def sendredpack(request):
     context = {}
-    
+
     id = request.GET.get('id', '')
     amount = int(request.GET.get('amount', 0))
-    ttype = int(request.GET.get('ttype', 0))
+    ttype = int(request.GET.get('ttype', -1))
     count = int(request.GET.get('count', 0))
     remark = int(request.GET.get('remark', ''))
     log.info('"Method":"sendredpack","ID":"%s","amount":"%d","ttype":"%d","count":"%d","remark":"%s"' % (id,amount,ttype,count,remark))
-    if (id == '' or amount == 0 or ttype == 0 or count == 0 remark == ''):
+    if id == '' or amount == 0 or ttype == -1 or count == 0 or remark == '':
         context['result'] = False
     else:
         context['result'] = implement.sendredpack(id,amount,ttype,count,remark)
-    log.info('"Method":"sendredpack","Return":"%s"' % context['result'])
+
+    result = json.dumps(context, ensure_ascii=False)
+    log.info('"Method":"sendredpack","Return":"%s"' % result)
+    return HttpResponse(result, content_type='application/json')
+
+'''
+### 抢红包
+- Method: GET
+- Url:   http://ip:port/scrapredpack/
+- para:
+-- id：微信openid
+-- redpackid: 红包id
+- Return
+-- para1:列表
+--- amount:抢到的红包金额
+--- list:抢红包的列表
+-- result:是否执行成功
+'''
+def scrapredpack(request):
+    context = {}
+
+    id = request.GET.get('id', '')
+    redpackid = int(request.GET.get('redpackid', 0))
+
+    log.info('"Method":"scrapredpack","ID":"%s","redpackid":"%d"' % (id,redpackid))
+    if (id == '' or redpackid == 0 ):
+        context['result'] = False
+    else:
+        context['result'] = implement.scrapredpack(id, redpackid)
+
+    result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
+    log.info('"Method":"scrapredpack","Return":"%s"' % result)
     return HttpResponse(result, content_type='application/json')
