@@ -9,6 +9,7 @@ import requests
 import logging
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import threading
+import random
 log = logging.getLogger("collect")
 
 appid = 'wxf29113dcf17a3978'
@@ -16,7 +17,8 @@ secret = 'f7add42fb8cdfc50549f3ced26f89264'
 
 
 def transfer(user, counterparty, amount, ttype, remark, formid):
-    threading.Lock.acquire()
+    mutex = threading.Lock()
+    mutex.acquire()
     try:
         with transaction.atomic():
             A = models.User.objects.filter(wxid=user)
@@ -132,7 +134,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid):
     except Exception as e:
         log.error(e)
         return False
-    threading.Lock.release()
+    mutex.release()
     if (formid != ''):
         firetransmessage(user, A.name, counterparty,B.name, formid, amount,
                          remark,
@@ -236,8 +238,10 @@ def sendredpack(id, amount, ttype, count, remark):
     if not sender.exists():
         return False
     sender = sender[0]
+    if ttype == 0:
+        amount = amount * count
     #现将钱转至红包管家
-    if (transfer(sener.exid, -2, amount, 1, '发红包', '')):
+    if (transfer(sender.wxid, -2, amount, 1, '发红包', '')):
         #创建红包
         try:
             transA = models.Redpack.objects.create(sender=sender,
@@ -249,6 +253,67 @@ def sendredpack(id, amount, ttype, count, remark):
                                                countleft=count)
         except Exception as e:
             log.error(e)
+            transfer(-2, sender.wxid, amount, 1, '回滚红包', '')
+            return False
+        return True
+    return False
+
+def scrapredpack(id,redpackid):
+    scraper = models.User.objects.filter(wxid=id)
+    redpack = models.Redpack.objects.filter(id=redpackid)
+    if (not scraper.exists()) or (not redpack.exists):
+        return False
+    scraper = scraper[0]
+    redpack = redpack[0]
+
+    returnamount = 0
+    returnlist = {}
+    result = False
+
+    mutex = threading.Lock()
+    mutex.acquire()
+    try:
+
+        #先判断是否抢过这个红包如果抢过则只返回列表
+        userobj = redpack.scrapredpack_to_redpack.filter(scraper=scraper)
+        if (userobj.exists()):
+            #已经抢过红包，直接返回抢到的金额和列表
+            returnamount = userobj[0].amount
+        else:
+            #再判断是否有可抢的红包
+            if redpack.countleft > 0:
+                #剩余数量大于零，剩余金额肯定大于零。有红包可抢。
+                if (redpack.ttype == 0):
+                    #普通红包
+                    returnamount = redpack.amount / redpack.count
+                else:
+                    #拼手气红包
+                    returnamount = makeredpack(redpack.countleft,redpack.amountleft)
+                redpack.amountleft = redpack.amountleft - returnamount
+                redpack.countleft = redpack.countleft - 1
+                with transaction.atomic():
+                    redpack.save()
+                    scrapredpack = models.Scrapredpack.objects.create(
+                        scraper=scraper, amount=returnamount, redpack=redpack)
+
+                transfer(-2, id, returnamount, 1, '抢红包', '')
+                result = True
+        #没有红包了返回列表
+        returnlist['para1'] = list(redpack.scrapredpack_to_redpack.values(
+            'scraper__name', 'amount', 'transaction_time'))
+        returnlist['id'] = redpack.id
+        returnlist['sender'] = redpack.sender.name
+        returnlist['img'] = redpack.sender.img
+        returnlist['amount'] =redpack.amount
+        returnlist['amountleft'] =redpack.amountleft
+        returnlist['count'] =redpack.count
+        returnlist['countleft'] =redpack.countleft
+        returnlist['remark'] =redpack.remark
+        returnlist['transaction_time'] = redpack.transaction_time
+    except Exception as e:
+        log.error(e)
+    mutex.release()
+    return result, returnamount, returnlist
 
 
 def getopenid(js_code):
@@ -285,6 +350,12 @@ def getaccesstoken():
     except Exception as e:
         log.error(e)
         return ''
+
+def makeredpack(count, amount):
+    if count == 1:
+        return amount
+    amountleft = amount - (count - 1) * 1
+    return random.randint(1, amountleft)
 
 class DateEncoder(json.JSONEncoder):
     def default(self, obj):
