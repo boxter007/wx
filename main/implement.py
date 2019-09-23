@@ -9,6 +9,7 @@ import requests
 import logging
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import threading
+import vthread
 import random
 log = logging.getLogger("collect")
 
@@ -136,6 +137,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid):
         return False
     mutex.release()
     if (formid != ''):
+
         firetransmessage(user, A.name, counterparty,B.name, formid, amount,
                          remark,
                          datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -214,6 +216,7 @@ def makeqrcode(openid):
         return ''
 
 
+@vthread.thread
 def firetransmessage(sender, sendername, receiver, receivername, formid, amount,
                      remark, time, transid):
     try:
@@ -225,11 +228,10 @@ def firetransmessage(sender, sendername, receiver, receivername, formid, amount,
             sender, 'XzN8Itq8kM7m5xSL9fG4GokRWfEzl7JbZeq3q0sPDbY', formid,
             transid, receivername, time, amount, remark)
         data = data.encode('UTF8')
-        response = requests.post(url, data,headers = headers)
-        data = jsontemplate % (
-            receiver, 'fAHigjdz_1wFs3zGjeOJeLn6Ob5z-fJaRUi94TuUC0M', formid,
-            transid, sendername, time, amount, remark)
-        response = requests.post(url,data)
+        log.info('"Method":"firetransmessage","data":"%s"' % data)
+        response = requests.post(url, data, headers=headers)
+        log.info('"Method":"firetransmessage","response":"%s"' % response.content)
+
     except Exception as e:
         log.error(e)
 

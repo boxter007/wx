@@ -10,6 +10,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import F
 import time
 import datetime
+
 log = logging.getLogger("collect")
 '''
 ### 根据客户ID获取其账户信息
@@ -236,13 +237,14 @@ def adduser(request):
 '''
 def transaction(request):
     context = {}
-    id = request.POST.get('id', request.GET.get('id',''))
-    amount = request.POST.get('amount', request.GET.get('amount', 0))
-    receiver = request.POST.get('receiver', request.GET.get('receiver', ''))
-    remark = request.POST.get('remark', request.GET.get('remark', ''))
-    formid = request.POST.get('formid', '')
-    log.info('"Method":"transaction","ID":"%s","amount":"%s","payer":"%s","receiver":"%s"' %
-             (id, amount, id, receiver))
+    id = request.GET.get('id','')
+    amount = request.GET.get('amount', 0)
+    receiver = request.GET.get('receiver', '')
+    remark = request.GET.get('remark', '')
+    formid = request.GET.get('formid', '')
+    log.info('"Method":"transaction","ID":"%s","amount":"%s","payer":"%s","receiver":"%s","formid":"%s","remark":"%s"' %
+             (id, amount, id, receiver, formid, remark))
+             
     context['wxid'] = id
     if id =='' or amount =='' or  receiver == '' or id == receiver:
         context['result'] = False
