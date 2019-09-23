@@ -10,5 +10,7 @@ urlpatterns = [
     path('transaction/', view.transaction),
     path('transactionhistory/', view.transactionhistory),
     path('getuser/', view.getuser),
-    path('getmarktag/', view.getmarktag)
+    path('getmarktag/', view.getmarktag),
+    path('sendredpack/', view.sendredpack),
+    path('scrapredpack/', view.scrapredpack),
 ]
