@@ -305,3 +305,37 @@ def getmarktag(request):
     result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
     log.info('"Method":"getmarktag","Return":"%s"' % result)
     return HttpResponse(result, content_type='application/json')
+
+'''
+### 发红包
+- Method: GET
+- Url:   http://ip:port/sendredpack/
+- para:
+-- id：微信openid
+-- amount: 红包金额，拼手气红包为总金额，普通红包为单个红包金额
+-- ttype: 红包类型
+-- count: 红包数量
+-- remark: 红包备注
+- Return
+-- para1:列表
+--- id:标签编号
+--- tag:标签内容
+--- bottom:该标签送出的积分下限
+--- top:该标签送出的积分上限
+-- result:是否执行成功
+'''
+def sendredpack(request):
+    context = {}
+    
+    id = request.GET.get('id', '')
+    amount = int(request.GET.get('amount', 0))
+    ttype = int(request.GET.get('ttype', 0))
+    count = int(request.GET.get('count', 0))
+    remark = int(request.GET.get('remark', ''))
+    log.info('"Method":"sendredpack","ID":"%s","amount":"%d","ttype":"%d","count":"%d","remark":"%s"' % (id,amount,ttype,count,remark))
+    if (id == '' or amount == 0 or ttype == 0 or count == 0 remark == ''):
+        context['result'] = False
+    else:
+        context['result'] = implement.sendredpack(id,amount,ttype,count,remark)
+    log.info('"Method":"sendredpack","Return":"%s"' % context['result'])
+    return HttpResponse(result, content_type='application/json')

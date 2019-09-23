@@ -8,14 +8,15 @@ import datetime
 import requests
 import logging
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+import threading
 log = logging.getLogger("collect")
 
 appid = 'wxf29113dcf17a3978'
 secret = 'f7add42fb8cdfc50549f3ced26f89264'
 
 
-def transfer(user, counterparty, amount,ttype,remark,formid):
+def transfer(user, counterparty, amount, ttype, remark, formid):
+    threading.Lock.acquire()
     try:
         with transaction.atomic():
             A = models.User.objects.filter(wxid=user)
@@ -131,6 +132,7 @@ def transfer(user, counterparty, amount,ttype,remark,formid):
     except Exception as e:
         log.error(e)
         return False
+    threading.Lock.release()
     if (formid != ''):
         firetransmessage(user, A.name, counterparty,B.name, formid, amount,
                          remark,
@@ -227,6 +229,27 @@ def firetransmessage(sender, sendername, receiver, receivername, formid, amount,
         response = requests.post(url,data)
     except Exception as e:
         log.error(e)
+
+
+def sendredpack(id, amount, ttype, count, remark):
+    sender = models.User.objects.filter(wxid=id)
+    if not sender.exists():
+        return False
+    sender = sender[0]
+    #现将钱转至红包管家
+    if (transfer(sener.exid, -2, amount, 1, '发红包', '')):
+        #创建红包
+        try:
+            transA = models.Redpack.objects.create(sender=sender,
+                                               amount=amount,
+                                               amountleft=amount,
+                                               ttype=ttype,
+                                               remark=remark,
+                                               count=count,
+                                               countleft=count)
+        except Exception as e:
+            log.error(e)
+
 
 def getopenid(js_code):
     try:
