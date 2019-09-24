@@ -13,4 +13,5 @@ urlpatterns = [
     path('getmarktag/', view.getmarktag),
     path('sendredpack/', view.sendredpack),
     path('scrapredpack/', view.scrapredpack),
+    path('redpackrecorde/', view.redpackrecorde),
 ]

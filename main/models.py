@@ -29,7 +29,10 @@ class Account(models.Model):
     credit = models.IntegerField(default=0)
     balance = models.IntegerField(default=0)
     balance_redpack = models.IntegerField(default=0)
-    remark = models.CharField(max_length=100)
+    remark = models.CharField(max_length=1000)
+    tagid = models.ForeignKey('Remarktag',
+                              on_delete=models.CASCADE,
+                              related_name='tagid_to_remarktag')
     transaction_time = models.DateTimeField(auto_now_add=True)
     transactionid = models.CharField(max_length=100)
 

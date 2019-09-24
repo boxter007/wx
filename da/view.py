@@ -231,6 +231,7 @@ def adduser(request):
 -- amount：转账金额
 -- receiver：收款者openid
 -- remark: 付款备注
+-- tag: 付款tag
 - Return
 -- wxid:微信openid
 -- result:是否执行成功
@@ -241,16 +242,19 @@ def transaction(request):
     amount = request.GET.get('amount', 0)
     receiver = request.GET.get('receiver', '')
     remark = request.GET.get('remark', '')
+    tag = int(request.GET.get('tag', 0))
     formid = request.GET.get('formid', '')
-    log.info('"Method":"transaction","ID":"%s","amount":"%s","payer":"%s","receiver":"%s","formid":"%s","remark":"%s"' %
-             (id, amount, id, receiver, formid, remark))
-             
+    log.info(
+        '"Method":"transaction","ID":"%s","amount":"%s","payer":"%s","receiver":"%s","formid":"%s","remark":"%s","tag":"%d"'
+        % (id, amount, id, receiver, formid, remark, tag))
+
     context['wxid'] = id
     if id =='' or amount =='' or  receiver == '' or id == receiver:
         context['result'] = False
     else:
         context['result'] = implement.transfer(id, receiver, int(amount), 2,
-                                               remark, formid)
+                                               remark, formid, tag)
+
     result = json.dumps(context, ensure_ascii=False)
     log.info('"Method":"transaction","ID"="%s","Return":%s' % (id, result))
 
@@ -399,4 +403,58 @@ def scrapredpack(request):
 
     result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
     log.info('"Method":"scrapredpack","Return":"%s"' % result)
+    return HttpResponse(result, content_type='application/json')
+
+
+'''
+### 红包记录
+- Method: GET
+- Url:   http://ip:port/redpackrecorde/
+- para:
+-- id: 微信openid
+-- ttype:类型。0表示发出去的红包；1表示收到的红包 
+-- page: 页数
+- Return
+-- count: 红包总数
+-- amount: 红包总金额
+-- para1:列表 ,类型为收到的红包时使用
+--- redpack__sender__name: 红包发放人
+--- redpack: 红包id
+--- transaction_time: 红包发放日期
+--- amount: 抢到的红包金额
+--- redpack__ttype: 红包类型
+-- para2:列表 ,类型为发出去红包时使用
+--- sender__name: 红包发放人
+--- id: 红包id
+--- transaction_time: 红包发放日期
+--- amount: 抢到的红包金额
+--- ttype: 红包类型
+--- count: 红包个数
+--- countleft: 剩余个数
+--- amountleft: 剩余金额
+-- currentpage: 当前页
+-- totalpages: 总页数
+-- result:是否执行成功
+'''
+def redpackrecorde(request):
+    context = {}
+    id = request.GET.get('id', '')
+    ttype = int(request.GET.get('ttype', -1))
+    page = int(request.GET.get('page', 1))
+
+    log.info('"Method":"redpackrecorde","ID":"%s","ttype":"%d","page":"%d"' %
+             (id, ttype, page))
+
+    if (id == '' or ttype == -1):
+        context['result'] = False
+    else:
+        r2, context['totalpages'], context[
+            'currentpage'] = implement.redpackrecorde(id, ttype, page)
+        if ttype == 1:
+            context['para1'] = list(r2)
+        elif ttype == 0:
+            context['para2'] = list(r2)
+        context['result'] = True
+    result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
+    log.info('"Method":"redpackrecorde","Return":"%s"' % result)
     return HttpResponse(result, content_type='application/json')

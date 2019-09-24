@@ -17,17 +17,19 @@ appid = 'wxf29113dcf17a3978'
 secret = 'f7add42fb8cdfc50549f3ced26f89264'
 
 
-def transfer(user, counterparty, amount, ttype, remark, formid):
+def transfer(user, counterparty, amount, ttype, remark, formid, tag):
     mutex = threading.Lock()
     mutex.acquire()
     try:
         with transaction.atomic():
             A = models.User.objects.filter(wxid=user)
             B = models.User.objects.filter(wxid=counterparty)
-            if (not A.exists()) or (not B.exists):
+            T = models.Remarktag.objects.filter(id = tag)
+            if (not A.exists()) or (not B.exists) or (not T.exists()):
                 return False
             A = A[0]
             B = B[0]
+            T = T[0]
             #判断交易后余额，如果出现负值，则取消交易
             if (A.balance - amount < 0 ):
                 return False
@@ -45,6 +47,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid):
                     balance=A.balance - amount,
                     balance_redpack=A.balance_redpack - amount,
                     remark=remark,
+                    tagid=T,
                     userid=A,
                     counterparty=B,
                     transactionid=transid)
@@ -55,6 +58,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid):
                     balance=B.balance + amount,
                     balance_redpack=B.balance_redpack + amount,
                     remark=remark,
+                    tagid=T,
                     userid=B,
                     counterparty=A,
                     transactionid=transid)
@@ -79,6 +83,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid):
                     balance=A.balance - amount,
                     balance_redpack=A.balance_redpack,
                     remark=remark,
+                    tagid=T,
                     userid=A,
                     counterparty=B,
                     transactionid=transid)
@@ -89,6 +94,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid):
                     balance=B.balance + amount,
                     balance_redpack=B.balance_redpack,
                     remark=remark,
+                    tagid=T,
                     userid=B,
                     counterparty=A,
                     transactionid=transid)
@@ -111,6 +117,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid):
                     balance=A.balance - amount,
                     balance_redpack=A.balance_redpack - amount,
                     remark=remark,
+                    tagid=T,
                     userid=A,
                     counterparty=B,
                     transactionid=transid)
@@ -121,6 +128,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid):
                     balance=B.balance + amount,
                     balance_redpack=B.balance_redpack,
                     remark=remark,
+                    tagid=T,
                     userid=B,
                     counterparty=A,
                     transactionid=transid)
@@ -318,6 +326,37 @@ def scrapredpack(id,redpackid):
     mutex.release()
     return result, returnamount, returnlist
 
+
+def redpackrecorde(id, ttype, page):
+    try:
+        userobj = models.User.objects.filter(wxid=id)
+        if (userobj.exists()):
+            userobj = userobj[0]
+            trans = None
+            if ttype == 1:
+                #抢到的红包
+                trans = userobj.scrapredpack_to_user.values(
+                    'redpack__sender__name', 'redpack', 'amount', 'transaction_time','redpack__ttype')
+            elif ttype == 0:
+                trans = userobj.redpack_to_user.values('sender__name',
+                                                       'id', 'amount',
+                                                       'transaction_time',
+                                                       'ttype',
+                                                       'count',
+                                                       'countleft',
+                                                       'amountleft')
+
+            r1 = Paginator(trans, 10)
+            try:
+                r2 = r1.page(page)
+            except PageNotAnInteger:
+                r2 = r1.page(1)
+            except EmptyPage:
+                r2 = r1.page(r1.num_pages)
+            return r2, r1.num_pages,r2.number
+    except Exception as e:
+        log.error(e)
+        return None
 
 def getopenid(js_code):
     try:
