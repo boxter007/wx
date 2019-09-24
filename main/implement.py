@@ -11,6 +11,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import threading
 import vthread
 import random
+from django.core.cache import cache
+
 log = logging.getLogger("collect")
 
 appid = 'wxf29113dcf17a3978'
@@ -377,21 +379,26 @@ def getopenid(js_code):
         return ''
 
 def getaccesstoken():
-    try:
-        url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s' % (
-            appid, secret)
-        log.info('"method":"getaccesstoken","RequestUrl":"%s"' % url)
-        response = requests.get(url)
-        log.info('"method":"getaccesstoken","Response.Status":"%s","Response.text":"%s"' %
-                (response.status_code, response.text))
-        if (response.status_code == 200):
-            result = json.loads(response.text)
-            return result['access_token']
-        else:
+    if cache.get('token') == None:
+        try:
+            url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s' % (
+                appid, secret)
+            log.info('"method":"getaccesstoken","RequestUrl":"%s"' % url)
+            response = requests.get(url)
+            log.info('"method":"getaccesstoken","Response.Status":"%s","Response.text":"%s"' %
+                    (response.status_code, response.text))
+            if (response.status_code == 200):
+                result = json.loads(response.text)
+                cache.set('token', result['access_token'],60*60)
+                return result['access_token']
+            else:
+                return ''
+        except Exception as e:
+            log.error(e)
             return ''
-    except Exception as e:
-        log.error(e)
-        return ''
+    else:
+        return cache.get('token')
+
 
 def makeredpack(count, amount):
     if count == 1:

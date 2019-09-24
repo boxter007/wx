@@ -202,3 +202,12 @@ LOGGING = {
 #CRONTAB_COMMAND_SUFFIX = '2>&1'
 #CRONJOBS = (('0 1 1 * *', 'da.timer.monthly',
 #             '>> %s/timer.log' % BASE_LOG_DIR), )
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'main_cache_table',
+        'options': {
+            'MAX_ENTRIES': 10240,
+        },
+    }
+}
