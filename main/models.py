@@ -42,6 +42,7 @@ class Remarktag(models.Model):
     tag = models.CharField(max_length=100)
     bottom = models.IntegerField(default=0)
     top = models.IntegerField(default=0)
+    enable = models.IntegerField(default=1)
 
 
 class Redpack(models.Model):
