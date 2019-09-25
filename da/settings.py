@@ -85,6 +85,9 @@ DATABASES = {
         'PASSWORD': 'ucg',
         'HOST': '139.159.238.0',
         'PORT': '3307',
+        'OPTIONS': {
+            'charset': 'utf8mb4'
+        },
     }
 }
 
