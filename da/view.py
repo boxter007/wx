@@ -10,6 +10,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import F
 import time
 import datetime
+from main import util
 
 log = logging.getLogger("collect")
 '''
@@ -286,6 +287,7 @@ def transaction(request):
 --- userid__img：交易方头像
 --- counterparty__img：交易对手头像
 --- remark: 交易备注
+--- tagid__name: 交易标签
 -- currentpage: 当前页
 -- totalpages: 总页数
 -- result: 是否执行成功
@@ -317,7 +319,7 @@ def transactionhistory(request):
 
     context['para1'] = list(r2)
     context['result'] = True
-    result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
+    result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
     log.info('"Method":"transactionhistory","ID":"%s","Return":%s' %
              (id, result))
     return HttpResponse(result, content_type='application/json')
@@ -338,10 +340,10 @@ def transactionhistory(request):
 def getmarktag(request):
     context = {}
     log.info('"Method":"getmarktag"')
-    tags=models.Remarktag.objects.values('id','tag','bottom','top')
+    tags=models.Remarktag.objects.filter(enable=1).values('id','tag','bottom','top')
     context['para1'] = list(tags)
     context['result'] = True
-    result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
+    result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
     log.info('"Method":"getmarktag","Return":"%s"' % result)
     return HttpResponse(result, content_type='application/json')
 
@@ -401,7 +403,7 @@ def scrapredpack(request):
     else:
         context['result'] = implement.scrapredpack(id, redpackid)
 
-    result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
+    result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
     log.info('"Method":"scrapredpack","Return":"%s"' % result)
     return HttpResponse(result, content_type='application/json')
 
@@ -455,6 +457,8 @@ def redpackrecorde(request):
         elif ttype == 0:
             context['para2'] = list(r2)
         context['result'] = True
-    result = json.dumps(context, cls=implement.DateEncoder, ensure_ascii=False)
+    result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
     log.info('"Method":"redpackrecorde","Return":"%s"' % result)
     return HttpResponse(result, content_type='application/json')
+
+
