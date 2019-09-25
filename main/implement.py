@@ -149,7 +149,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid, tag):
     if (formid != ''):
 
         firetransmessage(user, A.name, counterparty,B.name, formid, amount,
-                         remark,
+                         '#%s#%s' % (T.tag, remark),
                          datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                          transid)
 
@@ -164,8 +164,9 @@ def gettransferlist(user, page):
             trans = usrobj.transaction_to_user.values(
                 'userid__name', 'debit', 'credit', 'balance',
                 'balance_redpack', 'counterparty__name', 'transaction_time',
-                'transactionid', 'userid__img', 'counterparty__img',
-                'remark').order_by('-transaction_time')
+                'transactionid', 'userid__img', 'counterparty__img', 'remark',
+                'tagid__tag').order_by('-transaction_time')
+
             r1 = Paginator(trans, 10)
             try:
                 r2 = r1.page(page)
@@ -188,8 +189,8 @@ def getalltransferlist(page):
             trans = accountobjs.values(
                 'userid__name', 'debit', 'credit', 'balance',
                 'balance_redpack', 'counterparty__name', 'transaction_time',
-                'transactionid', 'counterparty__img', 'userid__img',
-                'remark').order_by('-transaction_time')
+                'transactionid', 'counterparty__img', 'userid__img', 'remark',
+                'tagid__tag').order_by('-transaction_time')
             r1 = Paginator(trans, 10)
             try:
                 r2 = r1.page(page)
@@ -257,13 +258,13 @@ def sendredpack(id, amount, ttype, count, remark):
     if (transfer(sender.wxid, -2, amount, 1, '发红包', '')):
         #创建红包
         try:
-            transA = models.Redpack.objects.create(sender=sender,
-                                               amount=amount,
-                                               amountleft=amount,
-                                               ttype=ttype,
-                                               remark=remark,
-                                               count=count,
-                                               countleft=count)
+            transA = models.Redpack.objects.create( sender=sender,
+                                                    amount=amount,
+                                                    amountleft=amount,
+                                                    ttype=ttype,
+                                                    remark=remark,
+                                                    count=count,
+                                                    countleft=count)
         except Exception as e:
             log.error(e)
             transfer(-2, sender.wxid, amount, 1, '回滚红包', '')
@@ -338,8 +339,13 @@ def redpackrecorde(id, ttype, page):
             if ttype == 1:
                 #抢到的红包
                 trans = userobj.scrapredpack_to_user.values(
-                    'redpack__sender__name', 'redpack', 'amount', 'transaction_time','redpack__ttype')
+                                                        'redpack__sender__name',
+                                                        'redpack',
+                                                        'amount',
+                                                        'transaction_time',
+                                                        'redpack__ttype')
             elif ttype == 0:
+                #发出去的红包
                 trans = userobj.redpack_to_user.values('sender__name',
                                                        'id', 'amount',
                                                        'transaction_time',
@@ -406,11 +412,3 @@ def makeredpack(count, amount):
     amountleft = amount - (count - 1) * 1
     return random.randint(1, amountleft)
 
-class DateEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj,  datetime.datetime):
-            return obj.strftime('%Y-%m-%d %H:%M:%S')
-        elif isinstance(obj, datetime.date):
-            return obj.strftime("%Y-%m-%d")
-        else:
-            return json.JSONEncoder.default(self, obj)
