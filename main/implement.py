@@ -258,7 +258,7 @@ def sendredpack(id, amount, ttype, count, remark):
     if ttype == 0:
         amount = amount * count
     #现将钱转至红包管家
-    if (transfer(sender.wxid, -2, amount, 1, '发红包', '')):
+    if (transfer(sender.wxid, -2, amount, 1, '发红包', '',-1)):
         #创建红包
         try:
             transA = models.Redpack.objects.create( sender=sender,
@@ -270,7 +270,7 @@ def sendredpack(id, amount, ttype, count, remark):
                                                     countleft=count)
         except Exception as e:
             log.error(e)
-            transfer(-2, sender.wxid, amount, 1, '回滚红包', '')
+            transfer(-2, sender.wxid, amount, 1, '回滚红包', '',-1)
             return False
         return True
     return False
@@ -313,7 +313,7 @@ def scrapredpack(id,redpackid):
                     scrapredpack = models.Scrapredpack.objects.create(
                         scraper=scraper, amount=returnamount, redpack=redpack)
 
-                transfer(-2, id, returnamount, 1, '抢红包', '')
+                transfer(-2, id, returnamount, 1, '抢红包', '',-1)
                 result = True
         #没有红包了返回列表
         returnlist['para1'] = list(redpack.scrapredpack_to_redpack.values(

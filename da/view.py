@@ -402,7 +402,8 @@ def scrapredpack(request):
     if (id == '' or redpackid == 0 ):
         context['result'] = False
     else:
-        context['result'] = implement.scrapredpack(id, redpackid)
+        context['result'], context['returnamount'], context[
+            'returnlist'] = implement.scrapredpack(id, redpackid)
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
     log.info('"Method":"scrapredpack","Return":"%s"' % result)
