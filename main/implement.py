@@ -20,6 +20,7 @@ secret = 'f7add42fb8cdfc50549f3ced26f89264'
 
 
 def transfer(user, counterparty, amount, ttype, remark, formid, tag):
+    result = False
     mutex = threading.Lock()
     mutex.acquire()
     try:
@@ -142,10 +143,13 @@ def transfer(user, counterparty, amount, ttype, remark, formid, tag):
                 #交易对手增余额
                 B.balance = transB.balance
                 B.save()
+        result = True
     except Exception as e:
         log.error(e)
-        return False
-    mutex.release()
+        result = False
+    finally:
+        mutex.release()
+
     if (formid != ''):
 
         firetransmessage(user, A.name, counterparty,B.name, formid, amount,
@@ -153,8 +157,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid, tag):
                          datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                          transid)
 
-    return True
-
+    return result
 
 def gettransferlist(user, page):
     try:
@@ -284,7 +287,7 @@ def scrapredpack(id,redpackid):
     returnlist = {}
     result = False
 
-    mutex = threading.Lock()
+    mutex = threading.Lock()    
     mutex.acquire()
     try:
 
@@ -326,7 +329,8 @@ def scrapredpack(id,redpackid):
         returnlist['transaction_time'] = redpack.transaction_time
     except Exception as e:
         log.error(e)
-    mutex.release()
+    finally:
+        mutex.release()
     return result, returnamount, returnlist
 
 

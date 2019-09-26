@@ -8,6 +8,7 @@ from main import implement
 from django.db.models import Sum
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import F
+from django.db.models import Q
 import time
 import datetime
 from main import util
@@ -93,7 +94,7 @@ def gettop5(request):
 
             context['para1'] = []
             r = list(
-                models.User.objects.exclude(wxid=-1).annotate(
+                models.User.objects.exclude(Q(wxid=-1) | Q(wxid =-2)).annotate(
                     balance5=F('balance') - F('balance_redpack')).values(
                         'wxid', 'name','balance_redpack','img',
                         'balance5').order_by('-balance5'))  #积分排名
@@ -340,7 +341,7 @@ def transactionhistory(request):
 def getmarktag(request):
     context = {}
     log.info('"Method":"getmarktag"')
-    tags=models.Remarktag.objects.filter(enable=1).values('id','tag','bottom','top')
+    tags=models.Remarktag.objects.exclude(Q(id = -1)).filter(enable=1).values('id','tag','bottom','top')
     context['para1'] = list(tags)
     context['result'] = True
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
@@ -460,5 +461,3 @@ def redpackrecorde(request):
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
     log.info('"Method":"redpackrecorde","Return":"%s"' % result)
     return HttpResponse(result, content_type='application/json')
-
-
