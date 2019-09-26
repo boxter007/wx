@@ -73,7 +73,7 @@ def admingetuseraccountinfobyid(request):
 
 
 '''
-获取用户账户信息
+根据tagid获取账户信息
 '''
 
 
@@ -129,7 +129,7 @@ def admingetredpackinfobyid(request):
     context = {}
     id = int(request.GET.get('id', -1))
     log.info('"Method":"admingetredpackinfobyid","ID":"%d"' % id)
-    context = adminimplement.admingetredpackinfobyid(id)
+    context = list(adminimplement.admingetredpackinfobyid(id))
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
 

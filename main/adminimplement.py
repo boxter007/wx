@@ -212,7 +212,7 @@ def admingetredpackinfobyid(id):
                                                'scraper__id',
                                                'amount',
                                                'transaction_time',
-                                               'scraper__img')[0]
+                                               'scraper__img')
     return result
 
 
@@ -242,7 +242,7 @@ def admingettags():
 
 
 def adminreset(id,ttype,amount):
-    result = {}
+    result = []
     if (ttype > 2 or ttype < 0 or amount <= 0):
         return result
     if (id == -1):
@@ -250,24 +250,31 @@ def adminreset(id,ttype,amount):
         users = models.User.objects.exclude(Q(id=1) | Q(id=2)).values(
             'id', 'wxid', 'name', 'balance_redpack')
         for user in users:
+            item = {}
             r = implement.transfer(user['wxid'], '-1', user['balance_redpack'], ttype,
                             '回收红包', '',-1)
             log.info('回收%s的红包 %d' % (user['name'], user['balance_redpack']))
 
             r = r and implement.transfer('-1', user['wxid'], amount, ttype, '发放红包','', -1)
             log.info('给%s发放红包 %d' % (user['name'], amount))
-            result[user['id']] = r
+            item['id'] = user['id']
+            item['result'] = r
+            result.append(item)
+
     else:
         user = models.User.objects.filter(id=id).values('id','wxid', 'name', 'balance_redpack')
         if (user.exists()):
             user = user[0]
+            item={}
             r = implement.transfer(user['wxid'], '-1', user['balance_redpack'], ttype,
                 '回收红包', '',-1)
             log.info('回收%s的红包 %d' % (user['name'], user['balance_redpack']))
 
             r = r and implement.transfer('-1', user['wxid'], amount, ttype, '发放红包', '',-1)
             log.info('给%s发放红包 %d' % (user['name'], amount))
-            result[user['id']] = r
+            item['id'] = user['id']
+            item['result'] = r
+            result.append(item)
     return result
 
 
