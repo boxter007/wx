@@ -145,7 +145,7 @@ def transfer(user, counterparty, amount, ttype, remark, formid, tag):
                 B.save()
         result = True
     except Exception as e:
-        log.error(e)
+        log.exception(e)
         result = False
     finally:
         mutex.release()
@@ -180,7 +180,7 @@ def gettransferlist(user, page):
 
             return r2, r1.num_pages,r2.number
     except Exception as e:
-        log.error(e)
+        log.exception(e)
         return None
 
 def getalltransferlist(page):
@@ -204,7 +204,7 @@ def getalltransferlist(page):
 
             return r2, r1.num_pages,r2.number
     except Exception as e:
-        log.error(e)
+        log.exception(e)
         return None
 
 
@@ -226,7 +226,7 @@ def makeqrcode(openid):
         else:
             return ''
     except Exception as e:
-        log.error(e)
+        log.exception(e)
         return ''
 
 
@@ -247,7 +247,7 @@ def firetransmessage(sender, sendername, receiver, receivername, formid, amount,
         log.info('"Method":"firetransmessage","response":"%s"' % response.content)
 
     except Exception as e:
-        log.error(e)
+        log.exception(e)
 
 
 def sendredpack(id, amount, ttype, count, remark):
@@ -269,7 +269,7 @@ def sendredpack(id, amount, ttype, count, remark):
                                                     count=count,
                                                     countleft=count)
         except Exception as e:
-            log.error(e)
+            log.exception(e)
             transfer(-2, sender.wxid, amount, 1, '回滚红包', '',-1)
             return False
         return True
@@ -328,7 +328,7 @@ def scrapredpack(id,redpackid):
         returnlist['remark'] =redpack.remark
         returnlist['transaction_time'] = redpack.transaction_time
     except Exception as e:
-        log.error(e)
+        log.exception(e)
     finally:
         mutex.release()
     return result, returnamount, returnlist
@@ -367,7 +367,7 @@ def redpackrecorde(id, ttype, page):
                 r2 = r1.page(r1.num_pages)
             return r2, r1.num_pages,r2.number
     except Exception as e:
-        log.error(e)
+        log.exception(e)
         return None
 
 def getopenid(js_code):
@@ -385,7 +385,7 @@ def getopenid(js_code):
         else:
             return ''
     except Exception as e:
-        log.error(e)
+        log.exception(e)
         return ''
 
 def getaccesstoken():
@@ -404,7 +404,7 @@ def getaccesstoken():
             else:
                 return ''
         except Exception as e:
-            log.error(e)
+            log.exception(e)
             return ''
     else:
         return cache.get('token')

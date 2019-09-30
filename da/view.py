@@ -54,7 +54,7 @@ def getaccountinfo(request):
         log.info('"Method":"getaccountinfo","ID":"%s","Return":%s' % (id, result))
         return HttpResponse(result, content_type='application/json')
     except Exception as e:
-        log.error(e)
+        log.exception(e)
         return HttpResponse('', content_type='application/json')
 
 
@@ -126,7 +126,7 @@ def gettop5(request):
         log.info('"Method":"gettop5","ID":"%s","Return":%s' % (id, result))
         return HttpResponse(result, content_type='application/json')
     except Exception as e:
-        log.error(e)
+        log.exception(e)
         return HttpResponse('', content_type='application/json')
 
 
@@ -214,11 +214,11 @@ def adduser(request):
                                                 qrcode=qrcode,
                                                 img=url)
                 # 此处需要修改手动充值
-                implement.transfer('-1', openid, 200, 0, '初始化红包')
+                # implement.transfer('-1', openid, 200, 0, '初始化红包','',0)
             context['wxid'] = openid
             context['result'] = True
     except Exception as e:
-        log.error(e)
+        log.exception(e)
     result = json.dumps(context, ensure_ascii=False)
     log.info('"Method":"adduser","ID","%s","Return":%s' % (id, result))
     return HttpResponse(result, content_type='application/json')
