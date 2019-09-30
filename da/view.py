@@ -200,7 +200,7 @@ def adduser(request):
         id = request.GET.get('code', '')
         name = request.GET.get('name', '')
         url = request.GET.get('url', '')
-        log.info('"Method":"adduser","Code"="%s","name":"%s","url":"%s"' % (id, name,url))
+        log.info('"Method":"adduser","Code":"%s","name":"%s","url":"%s"' % (id, name,url))
         if id == '' or name == '' :
             context['result'] = False
         else:
@@ -215,12 +215,18 @@ def adduser(request):
                                                 img=url)
                 # 此处需要修改手动充值
                 # implement.transfer('-1', openid, 200, 0, '初始化红包','',0)
+            else:
+                user = user[0]
+                user.url = url
+                user.name = name
+                user.lastlogintime = datetime.datetime.now()
+                user.save()
             context['wxid'] = openid
             context['result'] = True
     except Exception as e:
         log.exception(e)
     result = json.dumps(context, ensure_ascii=False)
-    log.info('"Method":"adduser","ID","%s","Return":%s' % (id, result))
+    log.info('"Method":"adduser","ID":"%s","Return":"%s"' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -251,7 +257,7 @@ def transaction(request):
         % (id, amount, id, receiver, formid, remark, tag))
 
     context['wxid'] = id
-    if id =='' or amount =='' or  receiver == '' or id == receiver:
+    if amount > 20 or id =='' or amount =='' or  receiver == '' or id == receiver:
         context['result'] = False
     else:
         context['result'] = implement.transfer(id, receiver, int(amount), 2,
