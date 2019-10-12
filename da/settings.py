@@ -144,7 +144,7 @@ LOGGING = {
         # 详细的日志格式
         'standard': {
             'format':
-            '[%(asctime)s.%(msecs)03d+0800][%(threadName)s:%(thread)d][%(filename)s:%(lineno)d][%(levelname)s][%(message)s]',
+            '[%(asctime)s.%(msecs)03d+0800][%(threadName)s:%(thread)d][%(filename)s:%(lineno)d][%(funcName)s][%(levelname)s]%(message)s',
             'datefmt': '%Y-%m-%dT%H:%M:%S'
         },
         # 简单的日志格式

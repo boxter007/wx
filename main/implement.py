@@ -202,10 +202,12 @@ def getalltransferlist(page):
             except EmptyPage:
                 r2 = r1.page(r1.num_pages)
 
-            return r2, r1.num_pages,r2.number
+            return r2, r1.num_pages, r2.number
+        else:
+            return '','0','0'
     except Exception as e:
         log.exception(e)
-        return None
+        return '', '0', '0'
 
 
 def makeqrcode(openid):
@@ -218,9 +220,12 @@ def makeqrcode(openid):
             'path': 'pages/trade/trade?scene=%s' % openid,
             'auto_color': True
         })
-        log.info('"method":"makeqrcode","RequestUrl":"%s","PostData":"%s"' % (url, data))
+        log.info('[%s][Process]["RequestUrl":"%s","PostData":"%s"]' % (openid, url, data))
+
         response = requests.post(url, data)
-        log.info('"method":"makeqrcode","Response.Status":"%s"' % response.status_code)
+        log.info('[%s][Process]["Response.Status":"%s"]' %
+                 (openid, response.status_code))
+
         if (response.status_code == 200):
             return response.content
         else:
@@ -242,9 +247,10 @@ def firetransmessage(sender, sendername, receiver, receivername, formid, amount,
             sender, 'XzN8Itq8kM7m5xSL9fG4GokRWfEzl7JbZeq3q0sPDbY', formid,
             transid, receivername, time, amount, remark)
         data = data.encode('UTF8')
-        log.info('"Method":"firetransmessage","data":"%s"' % data)
+        log.info('[%s][Process]["request":"%s"]' % (sender,data))
         response = requests.post(url, data, headers=headers)
-        log.info('"Method":"firetransmessage","response":"%s"' % response.content)
+        log.info('[%s][Process]["response":"%s"]' % (sender, response.content))
+
 
     except Exception as e:
         log.exception(e)
@@ -287,7 +293,7 @@ def scrapredpack(id,redpackid):
     returnlist = {}
     result = False
 
-    mutex = threading.Lock()    
+    mutex = threading.Lock()
     mutex.acquire()
     try:
 
@@ -375,13 +381,15 @@ def getopenid(js_code):
         grant_type = 'authorization_code'
         url = 'https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code' % (
             appid, secret, js_code)
-        log.info('"method":"getopenid","RequestUrl":"%s"' % url)
+        log.info('[%s][Process]["RequestUrl":"%s"]' % (js_code, url))
+
         response = requests.get(url)
-        log.info('"method":"getopenid","Response.Status":"%s","Response.text":"%s"' %
-                 (response.status_code,response.text))
+        log.info('[%s][Process]["Response.Status":"%s","Response.text":"%s"]' %
+                 (js_code, response.status_code, response.text))
+
         if (response.status_code == 200):
             result = json.loads(response.text)
-            return result['openid']
+            return result.get('openid','')
         else:
             return ''
     except Exception as e:
@@ -393,10 +401,12 @@ def getaccesstoken():
         try:
             url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s' % (
                 appid, secret)
-            log.info('"method":"getaccesstoken","RequestUrl":"%s"' % url)
+            log.info('[%s][Process]["RequestUrl":"%s"]' % ('',url))
             response = requests.get(url)
-            log.info('"method":"getaccesstoken","Response.Status":"%s","Response.text":"%s"' %
-                    (response.status_code, response.text))
+            log.info(
+                '[%s][Process]["Response.Status":"%s","Response.text":"%s"]' %
+                ('', response.status_code, response.text))
+
             if (response.status_code == 200):
                 result = json.loads(response.text)
                 cache.set('token', result['access_token'],60*60)
@@ -415,4 +425,3 @@ def makeredpack(count, amount):
         return amount
     amountleft = amount - (count - 1) * 1
     return random.randint(1, amountleft)
-

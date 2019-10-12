@@ -13,8 +13,8 @@ log = logging.getLogger("collect")
 def admingetusers(request):
     context = {}
     page = request.GET.get('page', 1)
-    log.info('"Method":"admingetusers","page":"%s"' % page)
-
+    log.info('[%s][Request][%s]' %
+                 ('', json.dumps(request.GET, ensure_ascii=False)))
     page, context['totalpages'], context['currentpage'] = adminimplement.admingetusers(page)
 
 
@@ -22,7 +22,7 @@ def admingetusers(request):
     context['result'] = True
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info('"Method":"admingetusers","Return":%s' % result)
+    log.info('[%s][Response][%s]' % ('', result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -33,7 +33,8 @@ def admingetuserinfobyid(request):
 
     context = {}
     id = int(request.GET.get('id', -1))
-    log.info('"Method":"admingetuserinfobyid","ID":"%s"' % id)
+    log.info('[%s][Request][%s]' %
+                 (id, json.dumps(request.GET, ensure_ascii=False)))
     if id == '':
         context['result'] = False
     else:
@@ -41,8 +42,7 @@ def admingetuserinfobyid(request):
         context['result'] = True
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info('"Method":"admingetuserinfobyid","ID":"%s","Return":%s' %
-                (id, result))
+    log.info('[%s][Response][%s]' % (id, result))
 
     return HttpResponse(result, content_type='application/json')
 
@@ -54,8 +54,8 @@ def admingetuseraccountinfobyid(request):
     context = {}
     id = int(request.GET.get('id', -1))
     page = request.GET.get('page', 1)
-    log.info('"Method":"admingetuseraccountinfobyid","ID":"%s","Page":"%s"' %
-             (id, page))
+    log.info('[%s][Request][%s]' %
+             (id, json.dumps(request.GET, ensure_ascii=False)))
     if id == '':
         context['result'] = False
     else:
@@ -64,9 +64,7 @@ def admingetuseraccountinfobyid(request):
         context['result'] = True
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info(
-        '"Method":"admingetuseraccountinfobyid","ID":"%s","Page":"%s""Return":%s'
-        % (id, page, result))
+    log.info('[%s][Response][%s]' % (id, result))
 
 
     return HttpResponse(result, content_type='application/json')
@@ -81,9 +79,8 @@ def admingetuseraccountinfobytagid(request):
     context = {}
     id = int(request.GET.get('id', -1))
     page = request.GET.get('page', 1)
-    log.info(
-        '"Method":"admingetuseraccountinfobytagid","ID":"%s","Page":"%s"' %
-        (id, page))
+    log.info('[%s][Request][%s]' %
+             (id, json.dumps(request.GET, ensure_ascii=False)))
     if id == '':
         context['result'] = False
     else:
@@ -94,9 +91,7 @@ def admingetuseraccountinfobytagid(request):
         context['result'] = True
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info(
-        '"Method":"admingetuseraccountinfobytagid","ID":"%s","Page":"%s","Return":%s'
-        % (id, page, result))
+    log.info('[%s][Response][%s]' % (id, result))
 
     return HttpResponse(result, content_type='application/json')
 
@@ -113,13 +108,14 @@ def admingetuserredpackinfo(request):
 def admingetredpacks(request):
     context = {}
     page = request.GET.get('page', 1)
-    log.info('"Method":"admingetredpacks","Page":"%s"' % page)
+    log.info('[%s][Request][%s]' %
+             ('', json.dumps(request.GET, ensure_ascii=False)))
 
     context['list'], context['totalpages'], context['currentpage'] = adminimplement.admingetredpacks(page)
     context['list'] = list(context['list'])
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
 
-    log.info('"Method":"admingetredpacks","Return":%s' % result)
+    log.info('[%s][Response][%s]' % ('', result))
     return HttpResponse(result, content_type='application/json')
 
 '''
@@ -128,12 +124,13 @@ def admingetredpacks(request):
 def admingetredpackinfobyid(request):
     context = {}
     id = int(request.GET.get('id', -1))
-    log.info('"Method":"admingetredpackinfobyid","ID":"%d"' % id)
+    log.info('[%s][Request][%s]' %
+             (id, json.dumps(request.GET, ensure_ascii=False)))
     context = list(adminimplement.admingetredpackinfobyid(id))
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
 
-    log.info('"Method":"admingetredpackinfobyid","Return":%s' % result)
+    log.info('[%s][Response][%s]' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -142,13 +139,14 @@ def admingetredpackinfobyid(request):
 '''
 def admingettags(request):
     context = {}
-    log.info('"Method":"admingettags"')
+    log.info('[%s][Request][%s]' %
+             ('', json.dumps(request.GET, ensure_ascii=False)))
 
     context['tags'] = list(adminimplement.admingettags())
     context['result'] = True
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info('"Method":"admingettags"')
+    log.info('[%s][Response][%s]' % ('', result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -161,13 +159,13 @@ def adminreset(request):
     ttype = int(request.GET.get('ttype', -1))
     id = int(request.GET.get('id', -1))
 
-    log.info('"Method":"adminreset","ID":"%d","amount":"%d","ttype":"%d"' %
-             (id, amount, ttype))
+    log.info('[%s][Request][%s]' %
+             (id, json.dumps(request.GET, ensure_ascii=False)))
 
     context['result'] = adminimplement.adminreset(id, ttype, amount)
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info('"Method":"adminreset","Return":%s' % result)
+    log.info('[%s][Response][%s]' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -192,15 +190,14 @@ def adminmodifytags(request):
     ttype = int(request.GET.get('ttype', -1))
     enable = int(request.GET.get('enable', -1))
 
-    log.info(
-        '"Method":"adminmodifytags","ID":"%d","top":"%d","bottom":"%d","tag":"%s","enable": "%d"'
-            % (id, top, bottom, tag, enable))
+    log.info('[%s][Request][%s]' %
+             (id, json.dumps(request.GET, ensure_ascii=False)))
 
     context['result'],context['id'] = adminimplement.adminmodifytags(id, ttype, tag, enable,
                                                     top, bottom)
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info('"Method":"adminmodifytags","Return":%s' % result)
+    log.info('[%s][Response][%s]' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 

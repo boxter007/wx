@@ -12,6 +12,7 @@ from django.db.models import Q
 import time
 import datetime
 from main import util
+import sys
 
 log = logging.getLogger("collect")
 '''
@@ -33,7 +34,8 @@ def getaccountinfo(request):
     try:
         context = {}
         id = request.GET.get('id', '')
-        log.info('"Method":"getaccountinfo","ID":"%s"' % id)
+        log.info('[%s][Request][%s]' %
+                 (id, json.dumps(request.GET, ensure_ascii=False)))
         if id == '':
             context['result'] = False
         else:
@@ -51,7 +53,7 @@ def getaccountinfo(request):
             context['result'] = True
 
         result = json.dumps(context, ensure_ascii=False)
-        log.info('"Method":"getaccountinfo","ID":"%s","Return":%s' % (id, result))
+        log.info('[%s][Response][%s]' % (id, result))
         return HttpResponse(result, content_type='application/json')
     except Exception as e:
         log.exception(e)
@@ -87,7 +89,8 @@ def gettop5(request):
         context = {}
         id = request.GET.get('id', '')
         count = int(request.GET.get('count', 10))
-        log.info('"Method":"gettop5","ID":"%s","count":"%s"' % (id,count))
+        log.info('[%s][Request][%s]' %
+                 (id, json.dumps(request.GET, ensure_ascii=False)))
         if id == '':
             context['result'] = False
         else:
@@ -123,7 +126,7 @@ def gettop5(request):
             context['result'] = True
         context['wxid'] = id
         result = json.dumps(context, ensure_ascii=False)
-        log.info('"Method":"gettop5","ID":"%s","Return":%s' % (id, result))
+        log.info('[%s][Response][%s]' % (id, result))
         return HttpResponse(result, content_type='application/json')
     except Exception as e:
         log.exception(e)
@@ -142,7 +145,8 @@ def gettop5(request):
 def getqrcode(request):
     context = None
     openid = request.GET.get('id', '')
-    log.info('"Method":"getqrcode","id":"%s"' % openid)
+    log.info('[%s][Request][%s]' %
+                 (openid, json.dumps(request.GET, ensure_ascii=False)))
     usr = models.User.objects.filter(wxid=openid)
     if (usr.exists()):
         user = usr[0]
@@ -165,7 +169,8 @@ def getqrcode(request):
 def getuser(request):
     context = {}
     id = request.GET.get('id', '')
-    log.info('"Method":"getuser","id":"%s"' % id)
+    log.info('[%s][Request][%s]' %
+                 (id, json.dumps(request.GET, ensure_ascii=False)))
     if id == '' :
         context['result'] = False
     else:
@@ -179,7 +184,7 @@ def getuser(request):
             context['result'] = False
 
     result = json.dumps(context, ensure_ascii=False)
-    log.info('"Method":"getuser","ID":"%s","Return":%s' % (id, result))
+    log.info('[%s][Response][%s]' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -200,7 +205,9 @@ def adduser(request):
         id = request.GET.get('code', '')
         name = request.GET.get('name', '')
         url = request.GET.get('url', '')
-        log.info('"Method":"adduser","Code":"%s","name":"%s","url":"%s"' % (id, name,url))
+        log.info('[%s][Request][%s]' %
+                 (id, json.dumps(request.GET, ensure_ascii=False)))
+
         if id == '' or name == '' :
             context['result'] = False
         else:
@@ -208,7 +215,7 @@ def adduser(request):
             user = models.User.objects.filter(wxid=openid)
             if (not user.exists()):
                 qrcode = implement.makeqrcode(openid)
-                log.info("Method:adduser qrcode=%s" , qrcode)
+                #log.info("Method:adduser qrcode=%s" , qrcode)
                 user = models.User.objects.create(wxid=openid,
                                                 name=name,
                                                 qrcode=qrcode,
@@ -226,7 +233,7 @@ def adduser(request):
     except Exception as e:
         log.exception(e)
     result = json.dumps(context, ensure_ascii=False)
-    log.info('"Method":"adduser","ID":"%s","Return":"%s"' % (id, result))
+    log.info('[%s][Response][%s]' % (id,result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -252,22 +259,17 @@ def transaction(request):
     remark = request.GET.get('remark', '')
     tag = int(request.GET.get('tag', 0))
     formid = request.GET.get('formid', '')
-    log.info(
-        '"Method":"transaction","ID":"%s","amount":"%s","payer":"%s","receiver":"%s","formid":"%s","remark":"%s","tag":"%d"'
-        % (id, amount, id, receiver, formid, remark, tag))
-
+    log.info('[%s][Request][%s]' %
+                 (id, json.dumps(request.GET, ensure_ascii=False)))
     context['wxid'] = id
-    if amount > 20 or id =='' or amount =='' or  receiver == '' or id == receiver:
+    if int(amount) > 20 or id =='' or amount =='' or  receiver == '' or id == receiver:
         context['result'] = False
     else:
         context['result'] = implement.transfer(id, receiver, int(amount), 2,
                                                remark, formid, tag)
 
     result = json.dumps(context, ensure_ascii=False)
-    log.info('"Method":"transaction","ID"="%s","Return":%s' % (id, result))
-
-
-
+    log.info('[%s][Response][%s]' % (id, result))
 
     return HttpResponse(result, content_type='application/json')
 
@@ -303,7 +305,8 @@ def transactionhistory(request):
     context = {}
     id = request.GET.get('id', '')
     page = request.GET.get('page', 1)
-    log.info('"Method":"transactionhistory","ID":"%s","page":"%s"' % (id,page))
+    log.info('[%s][Request][%s]' %
+                 (id, json.dumps(request.GET, ensure_ascii=False)))
     context['wxid'] = id
     if id == '':
         r2, context['totalpages'], context['currentpage'] = implement.getalltransferlist(page)
@@ -327,8 +330,7 @@ def transactionhistory(request):
     context['para1'] = list(r2)
     context['result'] = True
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info('"Method":"transactionhistory","ID":"%s","Return":%s' %
-             (id, result))
+    log.info('[%s][Response][%s]' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -346,12 +348,14 @@ def transactionhistory(request):
 '''
 def getmarktag(request):
     context = {}
-    log.info('"Method":"getmarktag"')
+    id = ''
+    log.info('[%s][Request][%s]' %
+             (id, json.dumps(request.GET, ensure_ascii=False)))
     tags=models.Remarktag.objects.exclude(Q(id = -1)).filter(enable=1).values('id','tag','bottom','top')
     context['para1'] = list(tags)
     context['result'] = True
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info('"Method":"getmarktag","Return":"%s"' % result)
+    log.info('[%s][Response][%s]' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 '''
@@ -375,14 +379,15 @@ def sendredpack(request):
     ttype = int(request.GET.get('ttype', -1))
     count = int(request.GET.get('count', 0))
     remark = int(request.GET.get('remark', ''))
-    log.info('"Method":"sendredpack","ID":"%s","amount":"%d","ttype":"%d","count":"%d","remark":"%s"' % (id,amount,ttype,count,remark))
+    log.info('[%s][Request][%s]' %
+                 (id, json.dumps(request.GET, ensure_ascii=False)))
     if id == '' or amount == 0 or ttype == -1 or count == 0 or remark == '':
         context['result'] = False
     else:
         context['result'] = implement.sendredpack(id,amount,ttype,count,remark)
 
     result = json.dumps(context, ensure_ascii=False)
-    log.info('"Method":"sendredpack","Return":"%s"' % result)
+    log.info('[%s][Response][%s]' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 '''
@@ -404,7 +409,8 @@ def scrapredpack(request):
     id = request.GET.get('id', '')
     redpackid = int(request.GET.get('redpackid', 0))
 
-    log.info('"Method":"scrapredpack","ID":"%s","redpackid":"%d"' % (id,redpackid))
+    log.info('[%s][Request][%s]' %
+                 (id, json.dumps(request.GET, ensure_ascii=False)))
     if (id == '' or redpackid == 0 ):
         context['result'] = False
     else:
@@ -412,7 +418,7 @@ def scrapredpack(request):
             'returnlist'] = implement.scrapredpack(id, redpackid)
 
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info('"Method":"scrapredpack","Return":"%s"' % result)
+    log.info('[%s][Response][%s]' % (id, result))
     return HttpResponse(result, content_type='application/json')
 
 
@@ -452,9 +458,8 @@ def redpackrecorde(request):
     ttype = int(request.GET.get('ttype', -1))
     page = int(request.GET.get('page', 1))
 
-    log.info('"Method":"redpackrecorde","ID":"%s","ttype":"%d","page":"%d"' %
-             (id, ttype, page))
-
+    log.info('[%s][Request][%s]' %
+             (id, json.dumps(request.GET, ensure_ascii=False)))
     if (id == '' or ttype == -1):
         context['result'] = False
     else:
@@ -466,5 +471,5 @@ def redpackrecorde(request):
             context['para2'] = list(r2)
         context['result'] = True
     result = json.dumps(context, cls=util.DateEncoder, ensure_ascii=False)
-    log.info('"Method":"redpackrecorde","Return":"%s"' % result)
+    log.info('[%s][Response][%s]' % (id, result))
     return HttpResponse(result, content_type='application/json')

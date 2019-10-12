@@ -265,13 +265,15 @@ def adminreset(id,ttype,amount):
         user = models.User.objects.filter(id=id).values('id','wxid', 'name', 'balance_redpack')
         if (user.exists()):
             user = user[0]
-            item={}
-            r = implement.transfer(user['wxid'], '-1', user['balance_redpack'], ttype,
-                '回收红包', '',-1)
-            log.info('回收%s的红包 %d' % (user['name'], user['balance_redpack']))
+            item = {}
+            r = True
+            if ttype == 0:
+                r = implement.transfer(user['wxid'], '-1', user['balance_redpack'], ttype,
+                    '回收红包', '',-1)
+                log.info('回收%s的红包 %d' % (user['name'], user['balance_redpack']))
 
-            r = r and implement.transfer('-1', user['wxid'], amount, ttype, '发放红包', '',-1)
-            log.info('给%s发放红包 %d' % (user['name'], amount))
+            r = r and implement.transfer('-1', user['wxid'], amount, ttype, '发放', '',-1)
+            log.info('给%s发放 %d' % (user['name'], amount))
             item['id'] = user['id']
             item['result'] = r
             result.append(item)
@@ -284,6 +286,12 @@ def adminreset(id,ttype,amount):
 
 
 def reconciliation(request):
+    '''
+    0、单人对账和全部对账
+    1、每个transactionid都对应两条交易记录，这两条交易记录的debit和credit交叉相等，userid和counterpartyid交叉相等
+    2、
+    '''
+    
     pass
 
 
