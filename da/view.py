@@ -286,6 +286,7 @@ def transaction(request):
 -- wxid:微信openid
 -- para1:列表
 --- userid__name：交易方
+--- userid__exid: 交易方wxid
 --- debit:支出金额
 --- credit：收入金额
 --- balance：累计余额
@@ -295,6 +296,7 @@ def transaction(request):
 --- transactionid:交易id
 --- userid__img：交易方头像
 --- counterparty__img：交易对手头像
+--- counterparty__wxid:交易对手wxid
 --- remark: 交易备注
 --- tagid__name: 交易标签
 -- currentpage: 当前页

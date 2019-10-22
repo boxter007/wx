@@ -165,9 +165,10 @@ def gettransferlist(user, page):
         if (usrobjs.exists()):
             usrobj = usrobjs[0]
             trans = usrobj.transaction_to_user.values(
-                'userid__name', 'debit', 'credit', 'balance',
-                'balance_redpack', 'counterparty__name', 'transaction_time',
-                'transactionid', 'userid__img', 'counterparty__img', 'remark',
+                'userid__name', 'userid__wxid', 'debit', 'credit', 'balance',
+                'balance_redpack', 'counterparty__name', 'counterparty__wxid',
+                'transaction_time', 'transactionid', 'userid__img',
+                'counterparty__img', 'remark',
                 'tagid__tag').order_by('-transaction_time')
 
             r1 = Paginator(trans, 10)
@@ -190,8 +191,8 @@ def getalltransferlist(page):
             | Q(userid_id=2) | Q(userid_id=2)).filter(credit=0)
         if (accountobjs.exists()):
             trans = accountobjs.values(
-                'userid__name', 'debit', 'credit', 'balance',
-                'balance_redpack', 'counterparty__name', 'transaction_time',
+                'userid__name', 'userid__wxid', 'debit', 'credit', 'balance',
+                'balance_redpack', 'counterparty__name', 'counterparty__wxid','transaction_time',
                 'transactionid', 'counterparty__img', 'userid__img', 'remark',
                 'tagid__tag').order_by('-transaction_time')
             r1 = Paginator(trans, 10)
