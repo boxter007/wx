@@ -17,7 +17,7 @@ cycler==0.10.0
 decorator==4.4.0
 defusedxml==0.6.0
 demjson==2.2.4
-Django==2.2.2
+Django==2.2.13
 entrypoints==0.3
 enum34==1.1.6
 envoy==0.0.3
