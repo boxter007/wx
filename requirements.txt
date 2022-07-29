@@ -47,7 +47,7 @@ MarkupSafe==1.1.1
 matplotlib==3.1.1
 mccabe==0.6.1
 memory-profiler==0.46
-mistune==0.8.4
+mistune==2.0.3
 MyQR==2.3.1
 mysql-connector-python-cext==2.2.3
 mysqlclient==1.4.2.post1
